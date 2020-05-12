@@ -13,6 +13,11 @@ class IrcClient:
         self.end_motd_detect = False
         self.is_joined = False
 
+        self.modules_process = None
+        self.modules_queue = None
+
+
+
     def send(self, message):
         if not self.sock:
             return

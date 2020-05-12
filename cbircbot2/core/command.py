@@ -1,4 +1,3 @@
-from cbircbot2.core.module_base import CMD_NONE
 
 class Command(object):
     def __init__(self, *args, **kwargs):
@@ -6,7 +5,7 @@ class Command(object):
         self.prefix = ""
         self.callback = None
         self.description = ""
-        self.access = CMD_NONE
+        self.access = 0
 
         self.load(**kwargs)
 
@@ -26,3 +25,7 @@ class Command(object):
 
         if "description" in args:
             self.cmd = args["description"]
+
+    def run(self, *args, **kwargs):
+        if self.callback:
+            self.callback(*args, **kwargs)
