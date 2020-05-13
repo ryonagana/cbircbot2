@@ -15,17 +15,22 @@ class Command(object):
             self.cmd = args["cmd"]
 
         if 'prefix' in args:
-            self.cmd = args['prefix']
+            self.prefix = args['prefix']
 
         if "access" in args:
-            self.cmd = args['access']
+            self.access = args['access']
 
         if "callback" in args:
-            self.cmd = args['callback']
+            self.callback = args['callback']
 
         if "description" in args:
-            self.cmd = args["description"]
+            self.description = args["description"]
 
     def run(self, *args, **kwargs):
         if self.callback:
             self.callback(*args, **kwargs)
+
+    @staticmethod
+    def register(*args, **kwargs):
+        c = Command(**kwargs)
+        return c

@@ -14,16 +14,20 @@ def mainloop(*args, **kwargs):
     if not 'params' in kwargs:
         print('error trying to get parameters')
 
+    if not "modules" in kwargs:
+        print('modules loaded incorrectly!')
+
     params = kwargs['params']
     sock = kwargs['sock']
     irc = kwargs['irc']
+    modules = kwargs["modules"]
 
 
 
     if sock.connect():
         print('Connection Success to {0}:{1} !'.format(params.HOSTNAME, params.PORT))
 
-    irc.auth()
+    irc.auth(modules=modules)
 
     while 1:
         try:
@@ -39,14 +43,15 @@ def main():
     params = EnvironmentParams()
     sock = Socket(params.HOSTNAME, params.PORT)
     irc = IrcClient(sock, params)
-    modules = IrcModules({'modules' : params.MODULES})
+    modules = IrcModules({'modules': params.MODULES})
 
     process = multiprocessing.Process(target=mainloop, kwargs={'sock': sock,
                                                                'params': params,
                                                                'irc': irc,
-                                                               'modules': modules}
+                                                               'modules': modules
+                                                               }
                                      )
-    process.daemon = True
+    #process.daemon = True
     process.start()
 
 

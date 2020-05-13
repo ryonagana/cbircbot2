@@ -10,7 +10,7 @@ class IrcModules(object):
     ROOT_PATH = path = os.path.dirname(sys.modules['__main__'].__file__)
     MODULES_PATH = os.path.join(ROOT_PATH, 'cbircbot2/modules')
 
-    def __init__(self, modules,  *args, **kwargs):
+    def __init__(self, modules, *args, **kwargs):
         for (_, d, f) in os.walk(self.MODULES_PATH):
             for folder in d:
                 if folder.find('__pycache__') != -1:
@@ -23,12 +23,15 @@ class IrcModules(object):
                 inst = self.create_instance(mod)
 
                 if inst:
-                    self.module_instances_list = {self.module_instances_list.MODULE_NAME : inst}
-                    self.module_instances_list[self.module_instances_list.MODULE_NAME].start()
-
-
+                    self.module_instances_list = {mod: inst}
+                    self.module_instances_list[mod].start(inst)
                     pass
-                    #self.MOD_INSTANCES.append(inst)
+
+    def get_module_instance(self, name):
+        try:
+            return self.module_instances_list[name]
+        except Exception as e:
+            print('module not found - {0}'.format(e))
 
     def create_instance(self, module_name):
 

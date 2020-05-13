@@ -1,6 +1,6 @@
 import os
 import sys
-import multiprocessing
+import multiprocessing as mp
 import re
 
 class IrcClient:
@@ -12,9 +12,11 @@ class IrcClient:
         self.is_connected = False
         self.end_motd_detect = False
         self.is_joined = False
+        self.modules = None
 
-        self.modules_process = None
-        self.modules_queue = None
+        self.modules_queue = mp.Queue()
+
+
 
 
 
@@ -50,7 +52,9 @@ class IrcClient:
 
         self.send("JOIN {0}".format(channel))
 
-    def auth(self):
+    def auth(self, **kwargs):
+        if "modules" in kwargs:
+            self.modules = kwargs["modules"]
 
         self.send("NICK {0}".format(self.params.NICKNAME))
         self.send("USER {0} {1} * :{2}".format(self.params.NICKNAME, self.params.HOSTNAME,  self.params.IDENTD))
@@ -64,7 +68,11 @@ class IrcClient:
 
         data = IrcClient.convert_utf8(msg)
 
-        if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1:
+        if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1 and not self.end_motd_detect:
+            self.end_motd_detect = True
+            self.modules_process= mp.Process(target=self.process_modules_worker, args=((self.modules_queue), self,))
+            self.modules_process.daemon= True
+            self.modules_process.start()
             return True
 
         return False
@@ -96,29 +104,74 @@ class IrcClient:
     def parse(self, data):
 
         msg = IrcClient.sanitize_string(IrcClient.convert_utf8(data))
-        event = self.privmsg_event(msg)
+        self.modules_queue.put(msg)
 
-        if event:
-            print(event)
+    ## MULTIPROCESSING CALLBACK ALERT
+    def process_modules_worker(self, queue, irc):
+
+        while True:
+            msg = queue.get()
+
+            if msg and msg.find('PRIVMSG') != -1:
+                is_message=re.search("^:(.+[aA-zZ0-0])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
+
+                if is_message:
+
+                    data ={
+
+                        'sender': is_message.groups()[0],  # sender's nickname
+                        'ident': is_message.groups()[1],  # ident
+                        'receiver': is_message.groups()[2],  # channel or receiver's nickname
+                        'message': is_message.groups()[3],  # message
+                    }
+
+                    for mod in irc.modules.module_folder_list:
+                        m = irc.modules.get_module_instance(mod)
+                        for command in m.registered_commands:
+                            command_obj = m.registered_commands[command]
+                            full_cmd = command_obj.prefix + command_obj.cmd
+                            print(command_obj.prefix,command_obj.cmd)
+
+
+                            if data['message'].find(full_cmd) != -1:
+                                m.registered_commands[command_obj.cmd].run(m,client=irc)
+                                continue
+                            else:
+                                print("MSG: {0}".format(data['message']))
+                            continue
 
 
 
-    #remember to decode to utf8 and strip \r\n from the messages
+
+                #print(dir(irc.modules))
+                #if is_message:
+                #    for module in irc.modules:
+                #        for cmd in module:
+                #            print("cmd {1} module {0}", module, cmd)
+                #            msg.task_done()
+
+## END MULTIPROCESSING CALLBACK ALERT
+
+
+##remember to decode to utf8 and strip \r\n from the messages
+
+
     def privmsg_event(self, msg):
 
         if msg and msg.find('PRIVMSG') != -1:
             is_message = re.search("^:(.+[aA-zZ0-0])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
             if is_message:
 
-                return  {
+                self.modules_queue.put( {
+                    'type': 'private',
                     'sender': is_message.groups()[0],  # sender's nickname
                     'ident': is_message.groups()[1],  # ident
                     'receiver': is_message.groups()[2],  # channel or receiver's nickname
                     'message': is_message.groups()[3],  # message
-                }
-            return None
-        return None
-
+                })
+                
+                return True
+        return False
 
 
 
