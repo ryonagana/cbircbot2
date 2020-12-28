@@ -121,16 +121,23 @@ class IrcClient:
 
                     for mod in irc.modules.module_folder_list:
                         m = irc.modules.get_module_instance(mod)
+
+                        if not m:
+                            print("Error: Module {0} Not Found".format(mod))
+                            continue
+
                         for command in m.registered_commands:
+
                             command_obj = m.registered_commands[command]
                             full_cmd = "{0} {1}".format(command_obj.prefix, command_obj.cmd) #command_obj.prefix + command_obj.cmd
-                            print("FULL_CMD:", full_cmd)
+                            #print("FULL_CMD:", full_cmd)
 
                             if data['message'].find(full_cmd) != -1:
-                                m.registered_commands[command_obj.cmd].run(m, client=irc)
+                                m.registered_commands[command_obj.cmd].run(m, client=irc, data=data)
                                 continue
                             else:
-                                print("MSG: {0}".format(data['message']))
+                                print("MSG SENT: {0}".format(data['message']))
+                                pass
                             continue
 
                 # print(dir(irc.modules))

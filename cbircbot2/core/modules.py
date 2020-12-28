@@ -10,7 +10,14 @@ class IrcModules(object):
     ROOT_PATH = path = os.path.dirname(sys.modules['__main__'].__file__)
     MODULES_PATH = os.path.join(ROOT_PATH, 'cbircbot2/modules')
 
+
     def __init__(self, modules, *args, **kwargs):
+
+        self.irc_client = None
+
+        if "client" in kwargs:
+            self.irc_client = kwargs['client']
+
         for (_, d, f) in os.walk(self.MODULES_PATH):
             for folder in d:
                 if folder.find('__pycache__') != -1:
@@ -21,10 +28,9 @@ class IrcModules(object):
         for mod in self.module_folder_list:
             if mod:
                 inst = self.create_instance(mod)
-
                 if inst:
                     self.module_instances_list = {mod: inst}
-                    self.module_instances_list[mod].start(inst)
+                    self.module_instances_list[mod].start(inst, {'client': self.irc_client })
                     pass
 
     def get_module_instance(self, name):
@@ -45,6 +51,7 @@ class IrcModules(object):
             instance = __import__(self.namespace + module_name, fromlist=module_name)
             if instance:
                 return getattr(instance, module_name)
+
         except Exception as ex:
             exc_info = sys.exc_info()
             print("ERROR: Cannot Instantiate {0} - {1}".format(module, str(ex)))

@@ -43,7 +43,7 @@ def main():
     params = EnvironmentParams()
     sock = Socket(params.HOSTNAME, params.PORT)
     irc = IrcClient(sock, params)
-    modules = IrcModules({'modules': params.MODULES})
+    modules = IrcModules({'modules': params.MODULES, 'client': irc })
 
     process = multiprocessing.Process(target=mainloop, kwargs={'sock': sock,
                                                                'params': params,

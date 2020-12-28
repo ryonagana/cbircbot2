@@ -1,7 +1,8 @@
 from cbircbot2.core.command import Command
 
+
 class IrcModuleInterface(object):
-    ID = 0  #must be unique default bot ID 0-1000  please use 1000+
+    ID = 0  # must be unique default bot ID 0-1000  please use 1000+
     AUTHOR = "Author Foo"
     PERMISSION = 0
     MODULE_NAME = "ModuleFoo"
@@ -17,6 +18,8 @@ class IrcModuleInterface(object):
     def __init__(self, irc=None):
         self.irc = irc
 
+
+
         pass
 
     def get_command(self, name=None):
@@ -29,11 +32,12 @@ class IrcModuleInterface(object):
         except IndexError as e:
             print('command not found')
 
-    def start(self):
+    def start(self, client):
+        self.irc = client
         self.cmd_help_generator()
         pass
 
-    def end(self):
+    def end(self, *args, **kwargs):
         pass
 
     def help_func(self, *args, **kwargs):
@@ -41,7 +45,14 @@ class IrcModuleInterface(object):
         if not "message" in kwargs:
             return
 
+    def get_params(self, data):
+        if "message_data" not in data:
+            return False
 
+        msg = data['message_data']
+        msg = msg.split(" ", 2)
+
+        return {'cmd': msg, 'params_count': len(msg)}
 
     def cmd_help_generator(self):
         self.register_cmd("!help", self.help_func, self.CMD_PRIVATE, "Default help for {0}".format(self.MODULE_NAME))
@@ -49,21 +60,18 @@ class IrcModuleInterface(object):
     @classmethod
     def register_cmd(cls, command, callback, access=0, description=""):
 
-
         if command and callback:
-            prefix = '?' #command[0]
+            prefix = '?'  # command[0]
             cmd = command
 
             data = {
                 "prefix": prefix,
-                "cmd"   : cmd,
+                "cmd": cmd,
                 "access": access,
                 "description": description,
-                "callback" : callback
+                "callback": callback
             }
 
             cls.registered_commands[cmd] = Command.register(**data)
             pass
         pass
-
-

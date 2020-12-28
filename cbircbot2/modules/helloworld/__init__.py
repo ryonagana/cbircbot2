@@ -8,8 +8,7 @@ class helloworld(IrcModuleInterface):
         self.AUTHOR = "ryonagana"
         self.DESCRIPTION = "Default Hello World!"
 
-
-    def start(self):
+    def start(self, client):
         print("hello world 1")
         self.register_cmd("hello", self.hello_callback, self.CMD_PUBLIC, "Just a Test!")
 
