@@ -3,6 +3,7 @@ import sys
 import multiprocessing as mp
 import re
 from cbircbot2.core.auth import AuthClient
+import time
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -71,7 +72,7 @@ class IrcClient:
             self.modules_process = mp.Process(target=self.process_modules_worker, args=((self.modules_queue), self,))
             self.modules_process.daemon = True
             self.modules_process.start()
-            self.auth_user.do_auth()
+
             return True
 
         return False
@@ -88,6 +89,8 @@ class IrcClient:
             # change flag to connected
             self.is_connected = True
             print("CONNECTED")
+            self.auth_user.do_auth()
+            time.sleep(2)
 
             # try to join a channel
         if not self.is_joined and self.is_connected:

@@ -1,5 +1,5 @@
 import  os
-
+import time
 class AuthClient:
     def __init__(self, client):
         self.irc = client
@@ -25,8 +25,12 @@ class AuthClient:
     def do_auth(self):
 
         if not self.isAuth and int(self.allowedAuth):
-            #self.irc.msg_to('Nickserv', 'nickserv identify {0}'.format(self.passwd))
-            self.irc.send("PRIVMSG NICKSERV :identify {0}".format(self.passwd))
+
+            for tries in range(3):
+                #self.irc.msg_to('Nickserv', 'nickserv identify {0}'.format(self.passwd))
+                self.irc.send("PRIVMSG NICKSERV :identify {0}".format(self.passwd))
+                time.sleep(2)
+
 
 
 
