@@ -2,7 +2,7 @@ import os
 import sys
 import multiprocessing as mp
 import re
-
+from cbircbot2.core.auth import AuthClient
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -14,6 +14,7 @@ class IrcClient:
         self.end_motd_detect = False
         self.is_joined = False
         self.modules = None
+        self.auth_user = AuthClient(self)
 
         self.modules_queue = mp.Queue()
 
@@ -39,7 +40,7 @@ class IrcClient:
         return msg.decode('utf-8')
 
     def msg_to(self, receiver, message):
-        self.send("PRIVMSG {0} :{1}", receiver, message)
+        self.send("PRIVMSG {0} :{1}".format(receiver, message))
 
     def msg_to_channel(self, channel, message):
 
@@ -70,6 +71,7 @@ class IrcClient:
             self.modules_process = mp.Process(target=self.process_modules_worker, args=((self.modules_queue), self,))
             self.modules_process.daemon = True
             self.modules_process.start()
+            self.auth_user.do_auth()
             return True
 
         return False

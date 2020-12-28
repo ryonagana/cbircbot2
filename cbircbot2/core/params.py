@@ -15,7 +15,7 @@ class EnvironmentParams:
         if not self.check_environ_exists('CB_NICKNAME'):
             print("Error: username not found using default: "  + self.NICKNAME)
         else:
-            self.USERNAME = self.check_environ_exists('CB_NICKNAME')
+            self.NICKNAME = self.check_environ_exists('CB_NICKNAME')
 
         if not self.check_environ_exists('CB_USERNAME'):
             print("Error: username not found using default " + self.USERNAME)
@@ -47,10 +47,8 @@ class EnvironmentParams:
         else:
             self.PORT = self.check_environ_exists('CB_PORT')
 
-
     def check_environ_exists(self, key):
         try:
-            os.environ[key]
             return os.environ[key]
         except KeyError as key:
             return False
