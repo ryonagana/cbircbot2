@@ -3,7 +3,7 @@ import urllib
 import json
 from urllib.request import urlopen
 from urllib.parse import urlencode
-
+import os
 
 class Weather(IrcModuleInterface):
     def __init__(self, irc=None):
@@ -16,6 +16,9 @@ class Weather(IrcModuleInterface):
 
 
     def start(self, client):
+
+
+
         self.register_cmd("weather", self.consume_weather_api, self.CMD_PUBLIC, "Just a Test!")
 
     def end(self):
@@ -23,9 +26,16 @@ class Weather(IrcModuleInterface):
 
     def consume_weather_api(self, *args, **kwargs):
 
+
+
+
         irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
+
+        if "OPEN_WEATHER_API" not in os.environ:
+            irc.msg_to_channel(irc.params.CHANNEL, "My API KEY was not set, Sorry. no weather for you")
+            return
 
         if "data" not in kwargs:
             print("command Failed in Module: {0}".format(self.MODULE_NAME))
@@ -40,7 +50,7 @@ class Weather(IrcModuleInterface):
             irc.msg_to_channel(irc.params.CHANNEL, "Please Type City name")
             return
 
-        api  = "f7943a9bc65705cbf2b8f4362f8e8776"
+        api  = os.environ['OPEN_WEATHER_API']
         url = "http://api.openweathermap.org/data/2.5/weather?"
 
 
