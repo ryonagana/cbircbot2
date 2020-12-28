@@ -18,7 +18,6 @@ class Socket:
 
         return True
 
-
     def recv(self, size):
         if type(size) == int:
             return self.socket_handler.recv(size)

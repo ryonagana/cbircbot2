@@ -11,7 +11,7 @@ class helloworld(IrcModuleInterface):
 
     def start(self):
         print("hello world 1")
-        self.register_cmd("!hello", self.hello_callback, self.CMD_PUBLIC, "Just a Test!")
+        self.register_cmd("hello", self.hello_callback, self.CMD_PUBLIC, "Just a Test!")
 
     def end(self):
         pass

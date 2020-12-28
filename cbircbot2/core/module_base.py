@@ -26,7 +26,7 @@ class IrcModuleInterface(object):
 
         try:
             return self.registered_commands[name]
-        except Exception as e:
+        except IndexError as e:
             print('command not found')
 
     def start(self):
@@ -51,8 +51,8 @@ class IrcModuleInterface(object):
 
 
         if command and callback:
-            prefix = command[0]
-            cmd = command[1:]
+            prefix = '?' #command[0]
+            cmd = command
 
             data = {
                 "prefix": prefix,
