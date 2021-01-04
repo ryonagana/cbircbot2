@@ -24,11 +24,14 @@ class Weather(IrcModuleInterface):
     def end(self):
         pass
 
+
+    def temp(self, val):
+        return "{v} Celsius".format(v=val)
+
+    def speed(self, val):
+        return "{v} km/h".format(v=val)
+
     def consume_weather_api(self, *args, **kwargs):
-
-
-
-
         irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
@@ -53,7 +56,6 @@ class Weather(IrcModuleInterface):
         api  = os.environ['OPEN_WEATHER_API']
         url = "http://api.openweathermap.org/data/2.5/weather?"
 
-
         city = args[2] #city name
         url_data = {'q': city, 'appid': api, 'units': 'metric' }
 
@@ -63,17 +65,15 @@ class Weather(IrcModuleInterface):
         data = json.loads(consume_api)
 
         name = data['name']
-        temp = data['main']['temp']
-        temp_max =  data['main']['temp_max']
-        temp_min = data['main']['temp_min']
+        temp =  self.temp(data['main']['temp'])
+        temp_max = self.temp(data['main']['temp_max'])
+        temp_min = self.temp(data['main']['temp_min'])
         humidity = data['main']['humidity']
         weather = data['weather'][0]['main']
         weather_descr = data['weather'][0]['description']
-        wind_vel = data['wind']['speed']
-        wind_deg = data['wind']['deg']
+        wind_vel = self.speed(data['wind']['speed'])
+        wind_deg = data['wind']['deg'] + 'degrees'
         country = data['sys']['country']
-        #msg = "{0} - {1}, {2}. Temp: {3} Max: {4} Min: {5}, Humidity: {6} Wind: {7}km/h Wind Degrees {8}".format(name, weather, weather_descr, temp, temp_max, temp_min, humidity, wind_vel, wind_deg)
-
         msg = "{city_name} - {country}, Weather:{weather} - {weather_descr}  Temp: {temp}, Min: {min} Max: {max}, Humidity: {humidity}, Wind Speed: {speed}, Wind Degrees: {deg}".format(city_name=name,
                                                                                                                                                                                          weather=weather,
                                                                                                                                                                                          weather_descr=weather_descr,
