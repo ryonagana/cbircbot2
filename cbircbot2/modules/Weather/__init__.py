@@ -71,5 +71,18 @@ class Weather(IrcModuleInterface):
         weather_descr = data['weather'][0]['description']
         wind_vel = data['wind']['speed']
         wind_deg = data['wind']['deg']
-        msg = "{0} - {1}, {2}. Temp: {3} Max: {4} Min: {5}, Humidity: {6} Wind: {7}km/h Wind Degrees {8}".format(name, weather, weather_descr, temp, temp_max, temp_min, humidity, wind_vel, wind_deg)
+        country = data['sys']['country']
+        #msg = "{0} - {1}, {2}. Temp: {3} Max: {4} Min: {5}, Humidity: {6} Wind: {7}km/h Wind Degrees {8}".format(name, weather, weather_descr, temp, temp_max, temp_min, humidity, wind_vel, wind_deg)
+
+        msg = "{city_name} - {country}, Weather:{weather} - {weather_descr}  Temp: {temp}, Min: {min} Max: {max}, Humidity: {humidity}, Wind Speed: {speed}, Wind Degrees: {deg}".format(city_name=name,
+                                                                                                                                                                                         weather=weather,
+                                                                                                                                                                                         weather_descr=weather_descr,
+                                                                                                                                                                                         country=country,
+                                                                                                                                                                                         temp=temp,
+                                                                                                                                                                                         min=temp_min,
+                                                                                                                                                                                         max=temp_max,
+                                                                                                                                                                                         humidity=humidity,
+                                                                                                                                                                                         speed=wind_vel,
+                                                                                                                                                                                         deg=wind_deg
+                                                                                                                                                                                         )
         irc.msg_to_channel(irc.params.CHANNEL, msg)
