@@ -24,7 +24,7 @@ class AuthClient:
 
     def do_auth(self):
 
-        if not self.isAuth and int(self.allowedAuth):
+        if not self.isAuth and self.allowedAuth:
 
             for tries in range(3):
                 #self.irc.msg_to('Nickserv', 'nickserv identify {0}'.format(self.passwd))
