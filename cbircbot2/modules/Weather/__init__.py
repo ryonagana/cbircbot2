@@ -6,30 +6,24 @@ from urllib.parse import urlencode
 import os
 
 class Weather(IrcModuleInterface):
+
+    MODULE_NAME = "weather"
+    AUTHOR = "archdark"
+    DESCRIPTION = "show weather using Open Weather API"
+
     def __init__(self, irc=None):
         super().__init__(self, irc)
         self.irc = irc
-        self.MODULE_NAME = "weather"
-        self.AUTHOR = "ryonagana"
-        self.DESCRIPTION = "Default Hello World!"
 
 
 
     def start(self, client):
-
-
-
-        self.register_cmd("weather", self.consume_weather_api, self.CMD_PUBLIC, "Just a Test!")
+        self.register_cmd("get", self.consume_weather_api, self.CMD_PUBLIC, "Just a Test!")
 
     def end(self):
         pass
 
 
-    def temp(self, val):
-        return "{v} Celsius".format(v=val)
-
-    def speed(self, val):
-        return "{v} km/h".format(v=val)
 
     def consume_weather_api(self, *args, **kwargs):
         irc = None
@@ -46,8 +40,8 @@ class Weather(IrcModuleInterface):
 
         args = kwargs['data']['message']
 
-        args = args.split(" ", 2)
-        count = len(args) - 2
+        args = args.split(" ", 3)
+        count = len(args) - 3
 
         if count == 0 or count > 1:
             irc.msg_to_channel(irc.params.CHANNEL, "Please Type City name")
@@ -56,23 +50,25 @@ class Weather(IrcModuleInterface):
         api  = os.environ['OPEN_WEATHER_API']
         url = "http://api.openweathermap.org/data/2.5/weather?"
 
-        city = args[2] #city name
+        city = args[3] #city name
         url_data = {'q': city, 'appid': api, 'units': 'metric' }
 
         url_data  = urllib.parse.urlencode(url_data)
         url_api = url + url_data
+        print("URL:", url_api)
         consume_api = urlopen(url_api).read().decode('utf-8')
         data = json.loads(consume_api)
 
         name = data['name']
-        temp =  self.temp(data['main']['temp'])
-        temp_max = self.temp(data['main']['temp_max'])
-        temp_min = self.temp(data['main']['temp_min'])
+
+        temp = "{temp}C".format(temp=data['main']['temp'])
+        temp_max = "{max}C".format(max=data['main']['temp_max'])
+        temp_min = "{min}C".format(min=data['main']['temp_min'])
         humidity = data['main']['humidity']
         weather = data['weather'][0]['main']
         weather_descr = data['weather'][0]['description']
-        wind_vel = self.speed(data['wind']['speed'])
-        wind_deg = data['wind']['deg'] + 'degrees'
+        wind_vel = "{speed} km/h".format(speed=data['wind']['speed'])
+        wind_deg = "{wind} deg.".format(wind=data['wind']['deg'])
         country = data['sys']['country']
         msg = "{city_name} - {country}, Weather:{weather} - {weather_descr}  Temp: {temp}, Min: {min} Max: {max}, Humidity: {humidity}, Wind Speed: {speed}, Wind Degrees: {deg}".format(city_name=name,
                                                                                                                                                                                          weather=weather,

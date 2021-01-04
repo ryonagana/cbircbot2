@@ -17,9 +17,6 @@ class IrcModuleInterface(object):
 
     def __init__(self, irc=None):
         self.irc = irc
-
-
-
         pass
 
     def get_command(self, name=None):

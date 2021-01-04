@@ -6,7 +6,7 @@ from importlib.abc import Loader
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
-    module_instances_list = []
+    module_instances_list = {}
     ROOT_PATH = path = os.path.dirname(sys.modules['__main__'].__file__)
     MODULES_PATH = os.path.join(ROOT_PATH, 'cbircbot2/modules')
 
@@ -29,7 +29,8 @@ class IrcModules(object):
             if mod:
                 inst = self.create_instance(mod)
                 if inst:
-                    self.module_instances_list = {mod: inst}
+
+                    self.module_instances_list[mod] = inst
                     self.module_instances_list[mod].start(inst, {'client': self.irc_client })
                     pass
 

@@ -127,10 +127,37 @@ class IrcClient:
                     for mod in irc.modules.module_folder_list:
                         m = irc.modules.get_module_instance(mod)
 
-                        if not m:
-                            print("Error: Module {0} Not Found".format(mod))
+
+                        if data['message'].find(m.MODULE_NAME) == -1:
                             continue
 
+                        module_name = m.MODULE_NAME
+
+                        for cmd in m.registered_commands:
+                            cmd_obj = m.registered_commands[cmd]
+                            str_cmd = "{prefix} {module_name} {command}".format(prefix=cmd_obj.prefix,
+                                                                                module_name=module_name,
+                                                                                command=cmd_obj.cmd)
+
+
+                            if data['message'].find(cmd_obj.cmd) != -1:
+                                m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
+                                break
+
+                            continue
+
+
+
+
+                                #print(cmd_obj, m.registered_commands[cmd])
+                                #if cmd_obj.cmd in m.registered_commands[cmd]:
+                                #    m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
+                                #    break
+
+
+
+
+                        """
                         for command in m.registered_commands:
 
                             command_obj = m.registered_commands[command]
@@ -144,13 +171,7 @@ class IrcClient:
                                 print("MSG SENT: {0}".format(data['message']))
                                 pass
                             continue
-
-                # print(dir(irc.modules))
-                # if is_message:
-                #    for module in irc.modules:
-                #        for cmd in module:
-                #            print("cmd {1} module {0}", module, cmd)
-                #            msg.task_done()
+                            """
 
     ## END MULTIPROCESSING CALLBACK ALERT
 
