@@ -13,7 +13,7 @@ if [ "$lazy" =  "1" ];
   echo ""
   exit
 fi
-exit
+
 
 
 export cb_nickname="lamebot" #your nickname
