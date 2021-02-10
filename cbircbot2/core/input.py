@@ -22,6 +22,6 @@ class InputText(object):
             if not re.match('^(.+[aA-zZ0-0])$', msg):
                 continue
 
-            irc.msg_to(self.parent.params.CHANNEL, msg)
+            irc.msg_to(self.parent.params.CHANNEL, msg + '\r\n')
             out = " {chan}: Bot Says: {msg}".format(chan=self.parent.params.CHANNEL,msg=msg)
             print(out)
