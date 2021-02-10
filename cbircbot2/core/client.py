@@ -4,6 +4,7 @@ import multiprocessing as mp
 import re
 from cbircbot2.core.auth import AuthClient
 import time
+from cbircbot2.core.input import InputText
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -73,6 +74,7 @@ class IrcClient:
             self.modules_process.daemon = True
             self.modules_process.start()
 
+
             return True
 
         return False
@@ -99,6 +101,8 @@ class IrcClient:
             self.is_joined = True
 
         self.output_data(data)
+
+
 
     def parse(self, data):
 

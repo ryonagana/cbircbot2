@@ -16,10 +16,10 @@ fi
 
 
 
-export cb_nickname="lamebot" #your nickname
-export cb_identd="itsame"   #your identd
-export cb_host="irc.lameserver.org" #server
-export cb_channel="##lamechannel" #channel
+export CB_NICKNAME="lamebot" #your nickname
+export CB_IDENTD="itsame"   #your identd
+export CB_HOST="irc.lameserver.org" #server
+export CB_CHANNEL="##lamechannel" #channel
 
 
 
@@ -30,18 +30,18 @@ export cb_channel="##lamechannel" #channel
 #this is a secure measure that you dont put your passwd in any file of the bot
 #but still acessible with "echo $cb_user password"
 
-#export cb_user_passwd=""   
+#export CB_USER_PASSWD=""
 
 #to use our weather command you need OpenWeather API key
 #uncomment below and put between ""
 
-#export open_weather_api=""
+#export OPEN_WEATHER_API=""
 
 
-#if you dont want to auth to nickerv just uncomment below and put 0
+#if you dont want to auth to nickserv just uncomment below and put 0
 
 
-#export cb_nickserv_auth=1
+#export CB_NICKSERV_AUTH=1
 
 
 

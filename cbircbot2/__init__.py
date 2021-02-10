@@ -2,6 +2,7 @@ from  cbircbot2.core.sockets import  Socket
 from cbircbot2.core.params import  EnvironmentParams
 from cbircbot2.core.client import IrcClient
 from cbircbot2.core.modules import IrcModules
+from cbircbot2.core.input import InputText
 import multiprocessing
 
 def mainloop(*args, **kwargs):
@@ -44,6 +45,7 @@ def main():
     sock = Socket(params.HOSTNAME, params.PORT)
     irc = IrcClient(sock, params)
     modules = IrcModules({'modules': params.MODULES, 'client': irc })
+    text = InputText(irc)
 
     process = multiprocessing.Process(target=mainloop, kwargs={'sock': sock,
                                                                'params': params,
@@ -53,10 +55,15 @@ def main():
                                      )
     #process.daemon = True
     process.start()
-
+    #process.join()
 
     while process.is_alive():
+
+        msg = input('>>>')
+        if msg:
+            text.queue.put(msg)
+
         if not process.is_alive():
+            process.terminate()
             break
-    process.join()
     sock.exit_gracefully()
