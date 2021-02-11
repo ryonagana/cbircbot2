@@ -44,8 +44,8 @@ export OPEN_WEATHER_API=""
 export CB_NICKSERV_AUTH=0
 
 
-#wanna use SSL set this variable to 1
-export CB_SSL=0
+#wanna use SSL uncomment  CB_SSL
+#export CB_SSL=1
 
 
 while true
