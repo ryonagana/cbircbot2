@@ -48,7 +48,7 @@ class EnvironmentParams:
         else:
             self.PORT = self.check_environ_exists('CB_PORT')
 
-        if not self.check_environ_exists('CB_SSL'):
+        if not self.check_environ_exists('CB_SSL') or self.check_environ_exists('CB_SSL') == int(0):
             print("Initializing without SSL connection!")
         else:
             self.SSL_ENABLED = True

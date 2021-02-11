@@ -4,6 +4,7 @@ import time
 import ssl
 import sys
 
+
 class Socket:
     def __init__(self, host, port, has_ssl=False):
         self.host = host
@@ -11,24 +12,26 @@ class Socket:
         self.sock = None
         self.socket_handler = None
         self.ssl_context = None
+        self.socket_connected = False
 
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except:
-            print("socket failed")
+        except Exception as e:
+            print("socket failed - Exception:" + str(e))
             sys.exit(1)
 
         if has_ssl:
             self.ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-            self.socket_handler = self.ssl_context.wrap_socket(self.sock)
+            self.socket_handler = self.ssl_context.wrap_socket(self.sock, do_handshake_on_connect=True)
         else:
             self.socket_handler = self.sock
 
     def connect(self):
         try:
-            self.socket_handler.connect_ex((self.host, int(self.port)))
+            self.socket_handler.connect((self.host, int(self.port)))
+            self.socket_connected = True
         except Exception as error:
-            print(error.__str__())
+            print(str(error))
             return False
 
         return True
@@ -40,6 +43,9 @@ class Socket:
         return None
 
     def send(self, data):
+        if not self.sock:
+            print("not connected, but tried to send " + data)
+            return
         self.socket_handler.send(str.encode(data))
 
     def close(self):

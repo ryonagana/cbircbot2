@@ -1,10 +1,7 @@
-import os
-import sys
 import multiprocessing as mp
 import re
 from cbircbot2.core.auth import AuthClient
 import time
-from cbircbot2.core.input import InputText
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -21,7 +18,7 @@ class IrcClient:
         self.modules_queue = mp.Queue()
 
     def send(self, message):
-        if not self.sock:
+        if not self.sock.socket_connected:
             return
         self.sock.send(IrcClient.format_msg(message))
 

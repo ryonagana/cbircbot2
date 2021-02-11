@@ -32,9 +32,9 @@ def mainloop(*args, **kwargs):
     irc.auth(modules=modules)
 
     while True:
-            data = sock.recv(4096)
-            irc.bot_loop(data)
-            irc.parse(data)
+        data = sock.recv(4096)
+        irc.bot_loop(data)
+        irc.parse(data)
 
 
 def main():
@@ -52,7 +52,7 @@ def main():
                                      )
     #process.daemon = True
     process.start()
-    #process.join()
+    process.join()
 
     while process.is_alive():
 

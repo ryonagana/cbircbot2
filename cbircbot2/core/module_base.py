@@ -31,7 +31,7 @@ class IrcModuleInterface(object):
 
     def start(self, client):
         self.irc = client
-        self.cmd_help_generator()
+        self.cmd_help_generator(self)
         pass
 
     def end(self, *args, **kwargs):

@@ -2,7 +2,6 @@ import os
 import sys
 import importlib
 from importlib.abc import Loader
-
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
@@ -18,7 +17,35 @@ class IrcModules(object):
         if "client" in kwargs:
             self.irc_client = kwargs['client']
 
-        for (_, d, f) in os.walk(self.MODULES_PATH):
+        self.module_folder_list = [ folder  for folder in next(os.walk(self.MODULES_PATH))][1]
+        print(self.module_folder_list)
+
+        for mod in self.module_folder_list:
+            if mod == "__pycache__":
+                continue
+
+            inst = self.create_instance(mod)
+            print ("Loaded Module: {module/}".format(module=mod))
+            if inst:
+                self.module_instances_list[mod] = inst
+                self.module_instances_list[mod].start(inst, {'client': self.irc_client})
+
+
+
+
+        """
+            inst = self.create_instance(p)
+            if inst:
+                self.module_instances_list[p] = inst
+                self.module_instances_list[p].start(inst, {'client': self.irc_client})
+                pass
+        """
+
+
+
+
+        """
+        for d in next(os.walk(self.MODULES_PATH)):
             for folder in d:
                 if folder.find('__pycache__') != -1:
                     continue
@@ -33,6 +60,8 @@ class IrcModules(object):
                     self.module_instances_list[mod] = inst
                     self.module_instances_list[mod].start(inst, {'client': self.irc_client })
                     pass
+        """
+
 
     def get_module_instance(self, name):
         try:
