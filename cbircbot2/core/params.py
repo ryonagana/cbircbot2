@@ -9,6 +9,7 @@ class EnvironmentParams:
     MODULES = "*"
     HOSTNAME = "irc.freenode.net"
     PORT = "6667"
+    SSL_ENABLED = False
 
     def __init__(self):
 
@@ -46,6 +47,12 @@ class EnvironmentParams:
             print("Warning: port environment var not found - using default: " + self.PORT)
         else:
             self.PORT = self.check_environ_exists('CB_PORT')
+
+        if not self.check_environ_exists('CB_SSL'):
+            print("Initializing without SSL connection!")
+        else:
+            self.SSL_ENABLED = True
+
 
     def check_environ_exists(self, key):
         try:

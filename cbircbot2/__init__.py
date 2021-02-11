@@ -4,6 +4,7 @@ from cbircbot2.core.client import IrcClient
 from cbircbot2.core.modules import IrcModules
 from cbircbot2.core.input import InputText
 import multiprocessing
+import sys
 
 def mainloop(*args, **kwargs):
 
@@ -30,19 +31,15 @@ def mainloop(*args, **kwargs):
 
     irc.auth(modules=modules)
 
-    while 1:
-        try:
-            data = sock.recv(2048)
+    while True:
+            data = sock.recv(4096)
             irc.bot_loop(data)
             irc.parse(data)
-        except sock.socket_handler.error:
-            print("bot interrupted by signal (CTRL+C)")
-            break
 
 
 def main():
     params = EnvironmentParams()
-    sock = Socket(params.HOSTNAME, params.PORT)
+    sock = Socket(params.HOSTNAME, params.PORT, params.SSL_ENABLED)
     irc = IrcClient(sock, params)
     modules = IrcModules({'modules': params.MODULES, 'client': irc })
     text = InputText(irc)
@@ -59,9 +56,9 @@ def main():
 
     while process.is_alive():
 
-        msg = input('>>>')
-        if msg:
-            text.queue.put(msg)
+        #msg = input('>>>')
+        #if msg:
+        #    text.queue.put(msg)
 
         if not process.is_alive():
             process.terminate()
