@@ -19,6 +19,24 @@ class IrcModuleInterface(object):
         self.irc = irc
         pass
 
+    def find_command(self, command):
+
+        for k,_ in self.registered_commands.items():
+            if command.find(k) != -1:
+                return True
+
+        return False
+
+
+    def  get_args(self, *args, **kwargs):
+        if "client" in kwargs:
+            irc = kwargs["client"]
+
+        message = kwargs['data']['message']
+        receiver = kwargs['data']['receiver']
+
+
+
     def get_command(self, name=None):
 
         if not name:
@@ -28,6 +46,7 @@ class IrcModuleInterface(object):
             return self.registered_commands[name]
         except IndexError as e:
             print('command not found')
+            return None
 
     def start(self, client):
         self.irc = client

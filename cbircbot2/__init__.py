@@ -3,38 +3,12 @@ from cbircbot2.core.params import  EnvironmentParams
 from cbircbot2.core.client import IrcClient
 from cbircbot2.core.modules import IrcModules
 from cbircbot2.core.input import InputText
-import multiprocessing
+import selectors
 import sys
-
-def mainloop(*args, **kwargs):
-
-    sock = None
-
-    if not 'sock' in kwargs:
-        print('error in mainloop invalid socket!')
-
-    if not 'params' in kwargs:
-        print('error trying to get parameters')
-
-    if not "modules" in kwargs:
-        print('modules loaded incorrectly!')
-
-    params = kwargs['params']
-    sock = kwargs['sock']
-    irc = kwargs['irc']
-    modules = kwargs["modules"]
-
-
-
-    if sock.connect():
-        print('Connection Success to {0}:{1} !'.format(params.HOSTNAME, params.PORT))
-
-    irc.auth(modules=modules)
-
-    while True:
-        data = sock.recv(4096)
-        irc.bot_loop(data)
-        irc.parse(data)
+import os
+import pathlib
+target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
+sys.path.append(target_path)
 
 
 def main():
@@ -43,24 +17,27 @@ def main():
     irc = IrcClient(sock, params)
     modules = IrcModules({'modules': params.MODULES, 'client': irc })
     text = InputText(irc)
+    sel = selectors.DefaultSelector()
 
-    process = multiprocessing.Process(target=mainloop, kwargs={'sock': sock,
-                                                               'params': params,
-                                                               'irc': irc,
-                                                               'modules': modules
-                                                               }
-                                     )
-    #process.daemon = True
-    process.start()
-    process.join()
+    sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
 
-    while process.is_alive():
+    if not sock.connect():
+        print("Error Trying to connect on {server}:{port}".format(server=params.HOSTNAME, port=params.PORT))
+        sys.exit(0)
 
-        #msg = input('>>>')
-        #if msg:
-        #    text.queue.put(msg)
+    irc.auth(modules=modules)
 
-        if not process.is_alive():
-            process.terminate()
-            break
+    while True:
+        event = sel.select(0.1)
+
+        if event:
+            for key, mask in event:
+                callback = key.data
+                fulldata = callback(key.fileobj)
+            if fulldata:
+                irc.bot_loop(fulldata)
+                irc.parse(fulldata)
+
+
+
     sock.exit_gracefully()

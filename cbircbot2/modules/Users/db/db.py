@@ -2,7 +2,7 @@ from ZODB import FileStorage
 import transaction
 import ZODB
 from .updates import init_db as _init
-
+#from updates import init_db as _init
 import os
 
 class UserDB(object):
@@ -24,8 +24,9 @@ class UserDB(object):
 
             _init(self)
 
-            self.admin = self.root['users']
+            self.users = self.root['users']
             self.piadas = self.root['piadas']
+            self.admin  = self.root['admin']
             pass
 
 
@@ -62,6 +63,7 @@ class UserDB(object):
 if __name__ == "__main__":
 
     from models.PiadaModel import PiadaModel
+    from models.AdminModel import AdminModel
     t = UserDB("d")
 
 
@@ -70,6 +72,10 @@ if __name__ == "__main__":
     #t.piadas['teste3'] = PiadaModel("ryonagana", "Microsoft")
     #t.piadas['teste2'] = PiadaModel("ryonagana", "COCOCO")
     #t.commit()
+
+    t.admin['ryonagana'] = AdminModel('ryonagana')
+    t.admin['ryonagana'].set_bot_allowed(True)
+    t.commit()
 
 
     for key, value in t.piadas.items():

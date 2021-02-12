@@ -13,6 +13,7 @@ class Socket:
         self.socket_handler = None
         self.ssl_context = None
         self.socket_connected = False
+        self.cert_file = ssl.get_default_verify_paths().cafile
 
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,13 +23,20 @@ class Socket:
 
         if has_ssl:
             self.ssl_context = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-            self.socket_handler = self.ssl_context.wrap_socket(self.sock, do_handshake_on_connect=True)
+            self.ssl_context.options &= ~ssl.OP_NO_SSLv3
+            self.ssl_context.load_verify_locations(cafile=self.cert_path)
+            self.socket_handler = self.ssl_context.wrap_socket(self.sock)
         else:
             self.socket_handler = self.sock
+
+    def get_sock(self):
+        return self.socket_handler
 
     def connect(self):
         try:
             self.socket_handler.connect((self.host, int(self.port)))
+            self.socket_handler.setblocking(False)
+            self.socket_handler.settimeout(10)
             self.socket_connected = True
         except Exception as error:
             print(str(error))
@@ -36,11 +44,9 @@ class Socket:
 
         return True
 
-    def recv(self, size):
-        if type(size) == int:
-            return self.socket_handler.recv(size)
+    def recv(self, sock):
+        return sock.recv(4096)
 
-        return None
 
     def send(self, data):
         if not self.sock:

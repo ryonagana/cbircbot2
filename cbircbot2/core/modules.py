@@ -18,14 +18,14 @@ class IrcModules(object):
             self.irc_client = kwargs['client']
 
         self.module_folder_list = [ folder  for folder in next(os.walk(self.MODULES_PATH))][1]
-        print(self.module_folder_list)
+
 
         for mod in self.module_folder_list:
             if mod == "__pycache__":
                 continue
 
             inst = self.create_instance(mod)
-            print ("Loaded Module: {module/}".format(module=mod))
+            print ("Loaded Module: {module}".format(module=mod))
             if inst:
                 self.module_instances_list[mod] = inst
                 self.module_instances_list[mod].start(inst, {'client': self.irc_client})

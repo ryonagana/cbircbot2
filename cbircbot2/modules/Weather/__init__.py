@@ -4,6 +4,15 @@ import json
 from urllib.request import urlopen
 from urllib.parse import urlencode
 import os
+import requests
+import requests.packages.urllib3.util.ssl_
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'
+import ssl
+import certifi
+
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
 
 class Weather(IrcModuleInterface):
 
@@ -48,16 +57,27 @@ class Weather(IrcModuleInterface):
             return
 
         api  = os.environ['OPEN_WEATHER_API']
-        url = "http://api.openweathermap.org/data/2.5/weather?"
+        http = 'http://'
+        if irc.params.SSL_ENABLED:
+            http = 'https://'
+
+
+
+        url = http + "api.openweathermap.org/data/2.5/weather?"
 
         city = args[3] #city name
         url_data = {'q': city, 'appid': api, 'units': 'metric' }
 
-        url_data  = urllib.parse.urlencode(url_data)
-        url_api = url + url_data
-        print("URL:", url_api)
-        consume_api = urlopen(url_api).read().decode('utf-8')
-        data = json.loads(consume_api)
+        req = None
+
+        with requests.Session() as s:
+            if irc.params.SSL_ENABLED:
+                req = s.get(url, params=url_data, verify=ssl.get_default_verify_paths().cafile)
+            else:
+                req = s.get(url, params=url_data)
+
+        data = json.loads(req.text)
+        print(data)
 
         name = data['name']
 

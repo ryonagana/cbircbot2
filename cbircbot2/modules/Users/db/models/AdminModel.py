@@ -1,7 +1,7 @@
 import persistent
 
 
-class AdminModel(persistent.Persistent):
+class AdmModel(persistent.Persistent):
     def __init__(self, nick):
         persistent.Persistent.__init__(self)
         self.nick = nick

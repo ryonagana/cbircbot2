@@ -2,11 +2,14 @@ import multiprocessing as mp
 import re
 from cbircbot2.core.auth import AuthClient
 import time
+import selectors
+
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
         self.sock = sock
         self.params = params
+        self.selector = selectors.DefaultSelector()
 
         self.is_auth = False
         self.is_connected = False
@@ -15,12 +18,16 @@ class IrcClient:
         self.modules = None
         self.auth_user = AuthClient(self)
 
-        self.modules_queue = mp.Queue()
+        self.modules_queue = mp.SimpleQueue()
+
+    def get_socket(self):
+        return self.sock.get_sock()
 
     def send(self, message):
         if not self.sock.socket_connected:
             return
         self.sock.send(IrcClient.format_msg(message))
+        time.sleep(1.0)
 
     @staticmethod
     def format_msg(msg):
@@ -41,6 +48,7 @@ class IrcClient:
     def msg_to(self, receiver, message):
         self.send("PRIVMSG {0} :{1}".format(receiver, message))
 
+
     def msg_to_channel(self, channel, message):
 
         self.send("PRIVMSG {0} :{1}".format(channel, message))
@@ -58,8 +66,10 @@ class IrcClient:
 
     def heartbeat(self, msg):
         data = IrcClient.convert_utf8(msg)
-        if data.find("PING") != -1 or data.startswith("PING") != -1:
-            self.send('PONG {0}'.format(data.split()[1]))
+        if data and data.find("PING") != -1 or data.startswith("PING") != -1:
+            msg = 'PONG :{pong}'.format(pong=data.split(':')[1])
+            self.send(msg)
+            print(msg)
 
     def detect_motd(self, msg):
 
@@ -67,7 +77,7 @@ class IrcClient:
 
         if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1 and not self.end_motd_detect:
             self.end_motd_detect = True
-            self.modules_process = mp.Process(target=self.process_modules_worker, args=((self.modules_queue), self,))
+            self.modules_process = mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
             self.modules_process.daemon = True
             self.modules_process.start()
 
@@ -101,10 +111,12 @@ class IrcClient:
 
 
 
+
     def parse(self, data):
 
         msg = IrcClient.sanitize_string(IrcClient.convert_utf8(data))
         self.modules_queue.put(msg)
+
 
     # MULTIPROCESSING CALLBACK ALERT
     def process_modules_worker(self, queue, irc):
@@ -113,7 +125,7 @@ class IrcClient:
             msg = queue.get()
 
             if msg and msg.find('PRIVMSG') != -1:
-                is_message = re.search("^:(.+[aA-zZ0-0])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
+                is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
 
                 if is_message:
 
@@ -125,9 +137,25 @@ class IrcClient:
                         'message': is_message.groups()[3],  # message
                     }
 
+                    print("MSG: " + data['message'])
+
+                    print(irc.modules.module_folder_list)
+
                     for mod in irc.modules.module_folder_list:
+                        if mod.find('__pycache__') != -1:
+                            del irc.modules.module_folder_list[mod]
+                            continue
+
+                        #print(mod)
+
+
                         m = irc.modules.get_module_instance(mod)
 
+                        print(dir(m))
+
+                        if not m:
+                            print("module {0} not found".format(mod))
+                            continue
 
                         if data['message'].find(m.MODULE_NAME) == -1:
                             continue
@@ -139,8 +167,6 @@ class IrcClient:
                             str_cmd = "{prefix} {module_name} {command}".format(prefix=cmd_obj.prefix,
                                                                                 module_name=module_name,
                                                                                 command=cmd_obj.cmd)
-
-
                             if data['message'].find(cmd_obj.cmd) != -1:
                                 m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
                                 break
@@ -148,31 +174,6 @@ class IrcClient:
                             continue
 
 
-
-
-                                #print(cmd_obj, m.registered_commands[cmd])
-                                #if cmd_obj.cmd in m.registered_commands[cmd]:
-                                #    m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
-                                #    break
-
-
-
-
-                        """
-                        for command in m.registered_commands:
-
-                            command_obj = m.registered_commands[command]
-                            full_cmd = "{0} {1}".format(command_obj.prefix, command_obj.cmd) #command_obj.prefix + command_obj.cmd
-                            #print("FULL_CMD:", full_cmd)
-
-                            if data['message'].find(full_cmd) != -1:
-                                m.registered_commands[command_obj.cmd].run(m, client=irc, data=data)
-                                continue
-                            else:
-                                print("MSG SENT: {0}".format(data['message']))
-                                pass
-                            continue
-                            """
 
     ## END MULTIPROCESSING CALLBACK ALERT
 
