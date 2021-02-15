@@ -58,28 +58,3 @@ class UserDB(object):
         tr.abort()
 
 
-
-
-if __name__ == "__main__":
-
-    from models.PiadaModel import PiadaModel
-    from models.AdminModel import AdminModel
-    t = UserDB("d")
-
-
-    #t.piadas['teste'] = PiadaModel("ryonagana", "AUI")
-    #t.piadas['teste1'] = PiadaModel("ryonagana", "Pato")
-    #t.piadas['teste3'] = PiadaModel("ryonagana", "Microsoft")
-    #t.piadas['teste2'] = PiadaModel("ryonagana", "COCOCO")
-    #t.commit()
-
-    t.admin['ryonagana'] = AdminModel('ryonagana')
-    t.admin['ryonagana'].set_bot_allowed(True)
-    t.commit()
-
-
-    for key, value in t.piadas.items():
-        print(key, value.owner, value.piada)
-
-    t.close()
-
