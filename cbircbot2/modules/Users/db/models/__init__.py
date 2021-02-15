@@ -1,1 +1,1 @@
-from cbircbot2.modules.users.db.models import *
+from cbircbot2.modules.Users.db.models import *

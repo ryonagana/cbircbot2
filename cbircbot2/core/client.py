@@ -3,7 +3,8 @@ import re
 from cbircbot2.core.auth import AuthClient
 import time
 import selectors
-
+from cbircbot2.core.colors import *
+from cbircbot2.core.modules import IrcModules
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -17,7 +18,7 @@ class IrcClient:
         self.is_joined = False
         self.modules = None
         self.auth_user = AuthClient(self)
-
+        self.modules_process = None
         self.modules_queue = mp.SimpleQueue()
 
     def get_socket(self):
@@ -77,9 +78,16 @@ class IrcClient:
 
         if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1 and not self.end_motd_detect:
             self.end_motd_detect = True
-            self.modules_process = mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
-            self.modules_process.daemon = True
-            self.modules_process.start()
+
+            try:
+                self.modules_process = mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
+                self.modules_process.daemon = True
+                self.modules_process.start()
+            except Exception as e:
+                print(COLOR_RED +  "main daemon failed!" + COLOR_RESET)
+                print(COLOR_RED + "exception: {0}".format(str(e)) + COLOR_RESET)
+                print()
+                self.sock.exit_gracefully()
 
 
             return True
@@ -137,27 +145,70 @@ class IrcClient:
                         'message': is_message.groups()[3],  # message
                     }
 
-                    print("MSG: " + data['message'])
+                    print(data)
 
-                    print(irc.modules.module_folder_list)
+                    if not data['message'].strip("").startswith("?"):
+                        continue
 
+
+
+                    msg = data['message'].strip("").split(" ")
+
+                    prefix = msg[0]
+                    module = msg[1]
+                    command = msg[2]
+                    params = data['message'].split(" ")[3:]
+
+                    module_instance = None
+
+                    try:
+                        module_instance = irc.modules.get_module_instance(module)
+                        if not module_instance:
+                            continue
+
+
+                        print(dir(module_instance))
+
+                        if command in module_instance.registered_commands:
+                            print(module_instance.registered_commands)
+                            print( COLOR_YELLOW + "{cmd}".format(cmd=dir(module_instance.registered_commands[command])) + COLOR_RESET)
+
+                            try:
+                                module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
+                            except Exception as e:
+                                print("Command: {0} not Found".format(command))
+                                print("Exception: {ex}".format(ex=str(e)))
+                                return
+
+                        else:
+                            print("Command: {0} not Found".format(command))
+                            return
+
+                    except Exception as e:
+                        print("Module Not Found!")
+                        print(BG_RED + COLOR_BLACK + "Exception: {ex}".format(ex=str(e)) + BG_RESET + COLOR_RESET )
+
+
+
+
+
+
+
+
+                    """
                     for mod in irc.modules.module_folder_list:
                         if mod.find('__pycache__') != -1:
                             del irc.modules.module_folder_list[mod]
                             continue
 
-                        #print(mod)
-
-
                         m = irc.modules.get_module_instance(mod)
 
-                        print(dir(m))
 
                         if not m:
                             print("module {0} not found".format(mod))
                             continue
 
-                        if data['message'].find(m.MODULE_NAME) == -1:
+                        if data['message'].lower().find(m.MODULE_NAME.lower()) != -1:
                             continue
 
                         module_name = m.MODULE_NAME
@@ -167,12 +218,12 @@ class IrcClient:
                             str_cmd = "{prefix} {module_name} {command}".format(prefix=cmd_obj.prefix,
                                                                                 module_name=module_name,
                                                                                 command=cmd_obj.cmd)
-                            if data['message'].find(cmd_obj.cmd) != -1:
+                            if data['message'].lower() == cmd_obj.cmd.lower():
                                 m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
                                 break
 
                             continue
-
+                    """
 
 
     ## END MULTIPROCESSING CALLBACK ALERT

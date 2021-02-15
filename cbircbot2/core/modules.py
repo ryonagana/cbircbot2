@@ -2,6 +2,8 @@ import os
 import sys
 import importlib
 from importlib.abc import Loader
+from cbircbot2.core.colors import *
+from cbircbot2.modules.Users import Users
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
@@ -17,7 +19,16 @@ class IrcModules(object):
         if "client" in kwargs:
             self.irc_client = kwargs['client']
 
-        self.module_folder_list = [ folder  for folder in next(os.walk(self.MODULES_PATH))][1]
+        #self.module_folder_list = [folder for folder in next(os.walk(self.MODULES_PATH))][1]
+
+        with open("modules.txt", "r") as fp:
+            lines = fp.read()
+            self.module_folder_list = [l for l in lines.split("\n")]
+            fp.close()
+
+
+
+
 
 
         for mod in self.module_folder_list:
@@ -65,9 +76,16 @@ class IrcModules(object):
 
     def get_module_instance(self, name):
         try:
-            return self.module_instances_list[name]
+
+            if name in self.module_instances_list:
+                return self.module_instances_list[name]
+            else:
+                return None
         except Exception as e:
             print('module not found - {0}'.format(e))
+            return None
+
+        return None
 
     def create_instance(self, module_name):
 
@@ -76,7 +94,6 @@ class IrcModules(object):
 
         instance = None
         module = None
-
         try:
             instance = __import__(self.namespace + module_name, fromlist=module_name)
             if instance:
@@ -84,9 +101,11 @@ class IrcModules(object):
 
         except Exception as ex:
             exc_info = sys.exc_info()
-            print("ERROR: Cannot Instantiate {0} - {1}".format(module, str(ex)))
-            print("Exception: {0} - Line Number {1} - Frame: {2}".format(str(ex), str(exc_info[2].tb_lineno),str(exc_info[2].tb_frame)  ))
-            print("Please Check the Log")
+            print(BG_RED + COLOR_BLACK + "ERROR: Cannot Instantiate {0} - {1}".format(module, str(ex)) + COLOR_RESET + BG_RESET)
+            print(BG_RED + COLOR_BLACK + "Exception: {0} - Line Number {1} - Frame: {2}".format(str(ex), str(exc_info[2].tb_lineno),str(exc_info[2].tb_frame)  ) + COLOR_RESET + BG_RESET)
+            print(BG_RED + COLOR_BLACK + "Please Check the Log" + COLOR_RESET + BG_RESET)
+            print(BG_RED + COLOR_BLACK + "Exception: {e}".format(e=str(ex)) + COLOR_RESET + BG_RESET)
+
             return None
 
 

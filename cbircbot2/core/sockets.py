@@ -28,6 +28,8 @@ class Socket:
             self.socket_handler = self.ssl_context.wrap_socket(self.sock)
         else:
             self.socket_handler = self.sock
+            self.sock.setblocking(False)
+            self.sock.settimeout(2)
 
     def get_sock(self):
         return self.socket_handler
@@ -61,3 +63,4 @@ class Socket:
     def exit_gracefully(self):
         time.sleep(1)
         self.close()
+        sys.exit(0)
