@@ -20,7 +20,7 @@ export CB_NICKNAME="lamebot" #your nickname
 export CB_IDENTD="itsame"   #your identd
 export CB_HOST="irc.lameserver.org" #server
 export CB_CHANNEL="##lamechannel" #channel
-export CB_SSL="1"
+#export CB_SSL="0"
 export CB_PORT=6667
 
 #optional variables uncomment below if you need then
