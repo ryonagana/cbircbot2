@@ -1,1 +1,1 @@
-from cbircbot2.modules import *
+#from cbircbot2.modules import *

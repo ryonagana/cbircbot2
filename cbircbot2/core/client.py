@@ -145,7 +145,7 @@ class IrcClient:
                         'message': is_message.groups()[3],  # message
                     }
 
-                    print(data)
+
 
                     if not data['message'].strip("").startswith("?"):
                         continue
@@ -167,7 +167,6 @@ class IrcClient:
                             continue
 
 
-                        #print(dir(module_instance))
 
                         if command in module_instance.registered_commands:
                             print(module_instance.registered_commands)
@@ -178,16 +177,16 @@ class IrcClient:
                             except Exception as e:
                                 print("Command: {0} not Found".format(command))
                                 print("Exception: {ex}".format(ex=str(e)))
-                                return
+                                continue
 
                         else:
                             print("Command: {0} not Found".format(command))
-                            return
+                            continue
 
                     except Exception as e:
                         print("Module Not Found!")
                         print(BG_RED + COLOR_BLACK + "Exception: {ex}".format(ex=str(e)) + BG_RESET + COLOR_RESET )
-
+                        continue
 
 
 

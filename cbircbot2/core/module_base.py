@@ -13,10 +13,12 @@ class IrcModuleInterface(object):
     CMD_PUBLIC = 1
     CMD_PRIVATE = 2
     CMD_BOTH = 3
+    CMD_BOTH = 3
     registered_commands = {}
+    irc = None
 
-    def __init__(self, irc=None):
-        self.irc = irc
+    def __init__(self):
+
         pass
 
     def find_command(self, command):
@@ -50,7 +52,9 @@ class IrcModuleInterface(object):
 
     def start(self, client):
         self.irc = client
-        self.cmd_help_generator(self)
+        self.cmd_help_generator()
+        assert self.irc is None
+        print("{mod_name} Started".format(mod_name=self.MODULE_NAME))
         pass
 
     def end(self, *args, **kwargs):

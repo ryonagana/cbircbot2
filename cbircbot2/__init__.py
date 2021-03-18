@@ -18,6 +18,7 @@ def main():
     irc = IrcClient(sock, params)
     modules = IrcModules({'modules': params.MODULES, 'client': irc })
     text = InputText(irc)
+
     sel = selectors.DefaultSelector()
 
     sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)

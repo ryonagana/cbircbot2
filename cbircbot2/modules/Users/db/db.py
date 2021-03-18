@@ -1,6 +1,9 @@
 from ZODB import FileStorage
 import transaction
 import ZODB
+from ZEO import ClientStorage
+import ZODB.config
+
 from .updates import init_db as _init
 #from updates import init_db as _init
 #from updates import init_db as _init
@@ -9,17 +12,30 @@ import os
 class UserDB(object):
 
     DATABASE_FILE="data.db"
+    host = ""
+    port = ""
+    is_zeo = False
 
-    def __init__(self, db_name=None):
+    def connect(self, host, port):
+        self.host = host
+        self.port = port
+        self.is_zeo = True
+
+
+    def __init__(self, db_name="d", host = None, port = None):
 
         self.model_has_been_created = False
 
-        try:
-            if not db_name:
-                db_name = self.DATABASE_FILE
 
-            self.storage = ZODB.FileStorage.FileStorage(file_name=db_name, blob_dir='.blob')
-            self.db = ZODB.DB(self.storage)
+
+        try:
+
+            if not host and not port:
+                self.storage = ZODB.FileStorage.FileStorage(file_name=db_name, blob_dir='.blob')
+                self.db = ZODB.DB(self.storage)
+            else:
+                self.db = ZODB.config.databaseFromURL('zeo.conf')
+
             self.connection = self.db.open()
             self.root = self.connection.root()
 

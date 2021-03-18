@@ -7,27 +7,31 @@ import traceback
 
 class Users(IrcModuleInterface):
 
-    db = UserDB('d')
+    db = None
     MODULE_NAME = "Users"
     AUTHOR = "ryonagana"
     DESCRIPTION = "user module!"
 
-    def __init__(self, irc = None):
-        super().__init__(self, irc)
-        self.irc = irc
+    def __init__(self):
+        super().__init__()
 
-    def start(self, client):
+        self.db = UserDB('d', "localhost", 9100)
+
+
+    def start(self,client):
+        super().start(client)
 
         self.register_cmd('karma++', self.user_add_karma, self.CMD_PUBLIC, "Add Karma to User")
         self.register_cmd('add_user', self.add_new_user, self.CMD_PUBLIC, "Add a New User")
 
+
     def end(self, *args, **kwargs):
+        self.db.close()
         pass
 
 
-    def is_admin(self, irc, nick):
+    def is_admin(self, nick):
         if not self.db.admin.get(nick):
-            irc.msg_to_channel(irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=nick))
             return False
         return True
 
@@ -49,7 +53,8 @@ class Users(IrcModuleInterface):
 
         nick = params[3]
 
-        if not self.is_admin(irc, sender):
+        if not self.is_admin(sender):
+            irc.msg_to_channel(irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=nick))
             return
 
         try:
@@ -59,6 +64,7 @@ class Users(IrcModuleInterface):
             irc.msg_to_channel(irc.params.CHANNEL, "{sender}: user {nick} added successfully".format(sender=sender, nick=nick))
         except Exception as ex:
             traceback.print_exc()
+
 
 
 

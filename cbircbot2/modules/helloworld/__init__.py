@@ -1,12 +1,16 @@
 from cbircbot2.core.module_base import IrcModuleInterface
 
 class helloworld(IrcModuleInterface):
-    def __init__(self, irc=None):
-        super().__init__(self, irc)
-        self.irc = irc
-        self.MODULE_NAME ="helloworld"
-        self.AUTHOR = "ryonagana"
-        self.DESCRIPTION = "Default Hello World!"
+
+    irc = None
+    MODULE_NAME = "helloworld"
+    AUTHOR = "ryonagana"
+    DESCRIPTION = "Default Hello World!"
+
+    def __init__(self):
+        super().__init__()
+        self.irc = None
+
 
     def start(self, client):
         print("hello world 1")

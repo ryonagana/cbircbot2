@@ -19,15 +19,17 @@ class Weather(IrcModuleInterface):
     MODULE_NAME = "weather"
     AUTHOR = "archdark"
     DESCRIPTION = "show weather using Open Weather API"
+    irc = None
 
-    def __init__(self, irc=None):
-        super().__init__(self, irc)
-        self.irc = irc
+    def __init__(self, ):
+        super().__init__()
+
 
 
 
     def start(self, client):
         self.register_cmd("get", self.consume_weather_api, self.CMD_PUBLIC, "Just a Test!")
+        self.irc = client
 
     def end(self):
         pass
