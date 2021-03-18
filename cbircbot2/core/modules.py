@@ -4,6 +4,7 @@ import importlib
 from importlib.abc import Loader
 from cbircbot2.core.colors import *
 from cbircbot2.modules.Users import Users
+
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []

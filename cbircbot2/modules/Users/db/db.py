@@ -3,6 +3,7 @@ import transaction
 import ZODB
 from .updates import init_db as _init
 #from updates import init_db as _init
+#from updates import init_db as _init
 import os
 
 class UserDB(object):
@@ -58,3 +59,5 @@ class UserDB(object):
         tr.abort()
 
 
+if __name__ == "__main__":
+    pass

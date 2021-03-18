@@ -7,6 +7,7 @@ import selectors
 import sys
 import os
 import pathlib
+import traceback
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
 
@@ -27,17 +28,23 @@ def main():
 
     irc.auth(modules=modules)
 
-    while True:
-        event = sel.select(0.1)
+    try:
 
-        if event:
-            for key, mask in event:
-                callback = key.data
-                fulldata = callback(key.fileobj)
-            if fulldata:
-                irc.bot_loop(fulldata)
-                irc.parse(fulldata)
+        fulldata = None
 
+        while True:
 
+            event = sel.select(0.1)
 
-    sock.exit_gracefully()
+            if event:
+                for key, mask in event:
+                    callback = key.data
+                    fulldata = callback(key.fileobj)
+                if fulldata:
+                    irc.bot_loop(fulldata)
+                    irc.parse(fulldata)
+
+    except Exception as ex:
+        traceback.print_exc()
+    finally:
+        sock.exit_gracefully()

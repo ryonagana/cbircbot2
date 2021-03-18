@@ -1,7 +1,10 @@
 import persistent
 
 
-class AdmModel(persistent.Persistent):
+class AdminModel(persistent.Persistent):
+    nick = ""
+    allowed_bot = False
+
     def __init__(self, nick):
         persistent.Persistent.__init__(self)
         self.nick = nick
@@ -11,6 +14,12 @@ class AdmModel(persistent.Persistent):
         self.allowed_bot = t
 
 class UserModel(persistent.Persistent):
+
+    nickname = ""
+    insert_date = None
+    last_seen = None
+    karma = 0
+    has_admin = False
 
     def __init__(self, nick, date):
         persistent.Persistent.__init__(self)

@@ -167,7 +167,7 @@ class IrcClient:
                             continue
 
 
-                        print(dir(module_instance))
+                        #print(dir(module_instance))
 
                         if command in module_instance.registered_commands:
                             print(module_instance.registered_commands)
