@@ -10,7 +10,7 @@ class InputText(object):
 
 
         self.process = mp.Process(target=self.queue_processing, args=(self.queue, self.parent,))
-        #self.process.daemon = True
+        self.process.daemon = True
         self.process.start()
 
 

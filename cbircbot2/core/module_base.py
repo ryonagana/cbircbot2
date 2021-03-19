@@ -17,6 +17,8 @@ class IrcModuleInterface(object):
     registered_commands = {}
     irc = None
 
+    message = ""
+
     def __init__(self):
 
         pass
@@ -77,6 +79,7 @@ class IrcModuleInterface(object):
     def cmd_help_generator(self):
         self.register_cmd("!help", self.help_func, self.CMD_PRIVATE, "Default help for {0}".format(self.MODULE_NAME))
 
+
     @classmethod
     def register_cmd(cls, command, callback, access=0, description=""):
 
@@ -95,3 +98,9 @@ class IrcModuleInterface(object):
             cls.registered_commands[cmd] = Command.register(**data)
             pass
         pass
+
+    def on_message(self, message):
+        pass
+
+    def get_message(self):
+        return self.message

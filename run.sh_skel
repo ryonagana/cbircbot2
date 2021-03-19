@@ -22,6 +22,8 @@ export CB_HOST="irc.lameserver.org" #server
 export CB_CHANNEL="##lamechannel" #channel
 export CB_SSL="1"
 export CB_PORT=6667
+export ZEO_ADDRESS="localhost"
+export ZEO_PORT=9100
 
 #optional variables uncomment below if you need then
 

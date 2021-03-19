@@ -145,9 +145,10 @@ class IrcClient:
                         'message': is_message.groups()[3],  # message
                     }
 
-
+                    irc.modules.broadcast_message_all_modules(data['message'])
 
                     if not data['message'].strip("").startswith("?"):
+                        #self.privmsg_event(data['message'])
                         continue
 
 
@@ -205,3 +206,6 @@ class IrcClient:
 
                 return True
         return False
+
+    def list_users(self):
+        self.send("NAMES {0}".format(self.params.CHANNEL))

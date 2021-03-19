@@ -10,6 +10,8 @@ class EnvironmentParams:
     HOSTNAME = "irc.freenode.net"
     PORT = "6667"
     SSL_ENABLED = False
+    ZEO_ADDRESS = "localhost"
+    ZEO_PORT    = 9100
 
     def __init__(self):
 
@@ -52,6 +54,16 @@ class EnvironmentParams:
             print("Initializing without SSL connection!")
         else:
             self.SSL_ENABLED = True
+
+        if not self.check_environ_exists('ZEO_ADDRESS'):
+            print("ZEO Address default localhost")
+        else:
+            self.ZEO_ADDRESS = self.check_environ_exists('ZEO_ADDRESS')
+
+        if not self.check_environ_exists('ZEO_PORT'):
+            print('ZEO default port 9100')
+        else:
+            self.ZEO_PORT = self.check_environ_exists('ZEO_PORT')
 
 
     def check_environ_exists(self, key):

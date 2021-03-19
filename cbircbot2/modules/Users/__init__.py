@@ -19,12 +19,20 @@ class Users(IrcModuleInterface):
 
 
 
+
+
     def start(self,client):
         super().start(client)
 
+
+
+        self.db_addr = self.irc.params.ZEO_ADDRESS
+        self.db_port = self.irc.params.ZEO_PORT
+
         self.register_cmd('karma++', self.user_add_karma, self.CMD_PUBLIC, "Add Karma to User")
-        self.register_cmd('add_user', self.add_new_user, self.CMD_PUBLIC, "Add a New User")
+        self.register_cmd('add', self.add_new_user, self.CMD_PUBLIC, "Add a New User")
         self.register_cmd('karma--', self.user_remove_karma, self.CMD_PUBLIC, "Add a New User")
+        self.register_cmd('karma', self.show_karma, self.CMD_PUBLIC, "Shows Karma Number")
 
 
     def end(self, *args, **kwargs):
@@ -33,7 +41,7 @@ class Users(IrcModuleInterface):
 
     def is_admin(self, nick):
 
-        db = UserDB('d', 'localhost',9100)
+        db = UserDB('d', "localhost", 9100)
         try:
             if db.admin.has_key(nick):
                 return True
@@ -44,10 +52,79 @@ class Users(IrcModuleInterface):
             db.close()
         return False
 
+    def signup_all_users(self):
+
+        users = []
+
+        self.irc.irc.send("NAMES {0}".format(self.irc.params.CHANNEL))
+
+        pass
+
+
+    def register_user(self, name):
+        db = UserDB('d', "localhost", 9100)
+
+        user = db.users.has_key(name)
+
+        if not user:
+            dt = date.today().strftime("%Y-%m-%d %H:%M:%S")
+            new_user = UserModel(name, dt)
+
+            db.users[name] = new_user
+            db.commit()
+            db.close()
+
+
+    def show_karma(self, *args, **kwargs):
+        db = UserDB('d', "localhost", 9100)
+        message = kwargs['data']['message']
+        receiver = kwargs['data']['receiver']
+        sender = kwargs['data']['sender']
+        params = message.split(" ", 3)
+        count_args = len(params) - 3
+
+        if count_args == 1:
+
+
+            nick = params[3]
+
+            user = db.users.has_key(nick)
+            if user:
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: {nick} has {karma} points".format(sender=sender, nick=nick, karma=db.users[nick].karma))
+                return
+
+        try:
+            user = db.users.has_key(sender)
+
+            if user:
+
+                karma_count = db.users[sender].karma
+                point_m = "point"
+                if karma_count > 1:
+                    point_m = "points"
+
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: You have {karma} {p}".format(sender=sender,p=point_m,karma=karma_count))
+            else:
+                self.register_user(sender)
+
+                point_m = "point"
+                if db.users[sender].karma > 1:
+                    point_m = "points"
+
+                self.irc.msg_to_channel(self.irc.params.CHANNEL,
+                                        "{sender}: You have {karma} {p}".format(sender=sender, p=point_m,
+                                                                                karma=db.users[sender].karma))
+        except Exception as e:
+            pass
+        finally:
+            db.close()
+
+
+
     def add_new_user(self, *args, **kwargs):
 
 
-        db = UserDB('d', 'localhost',9100)
+        db = UserDB('d', "localhost", 9100)
         message = kwargs['data']['message']
         receiver = kwargs['data']['receiver']
         sender = kwargs['data']['sender']
@@ -76,7 +153,7 @@ class Users(IrcModuleInterface):
 
 
     def user_add_karma(self, *args, **kwargs):
-        db = UserDB('d', 'localhost',9100)
+        db = UserDB('d', "localhost", 9100)
 
         message = kwargs['data']['message']
         receiver = kwargs['data']['receiver']
@@ -92,16 +169,19 @@ class Users(IrcModuleInterface):
         nick = params[3]
         is_allowed = False
 
-        if not self.is_admin(sender):
-            self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=sender))
-            return
+        #if not self.is_admin(sender):
+        #    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=sender))
+        #    return
 
 
         try:
             user = db.users.has_key(nick)
 
             if not user:
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "User not Found. Sorry")
+                self.register_user(sender)
+                db.users[sender].add_karma()
+                db.commit()
+                #self.irc.msg_to_channel(self.irc.params.CHANNEL, "User not Found. Sorry")
                 #self.db.users[nick] = UserModel(nick, date.today())
                 #self.db.users[nick].add_karma()
             else:
@@ -120,7 +200,7 @@ class Users(IrcModuleInterface):
 
 
     def user_remove_karma(self, *args, **kwargs):
-        db = UserDB('d', 'localhost',9100)
+        db = UserDB('d', "localhost", 9100)
 
         message = kwargs['data']['message']
         receiver = kwargs['data']['receiver']
@@ -129,23 +209,24 @@ class Users(IrcModuleInterface):
         count_args = len(params) - 3
 
         if count_args <= 0:
-
             self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: Missing parameter".format(sender=sender))
             return
 
         nick = params[3]
         is_allowed = False
 
-        if not self.is_admin(sender):
-            self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=sender))
-            return
+        #if not self.is_admin(sender):
+        #    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=sender))
+        #    return
 
 
         try:
             user = db.users.has_key(nick)
 
             if not user:
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "User not Found. Sorry")
+                self.register_user(nick)
+                db.users[nick].remove_karma()
+                db.commit()
             else:
                 db.users[nick].remove_karma()
                 db.commit()
@@ -173,5 +254,8 @@ class Users(IrcModuleInterface):
 
     def show_jokes(self):
         pass
+
+    def on_message(self, message):
+        super().on_message(message)
 
 
