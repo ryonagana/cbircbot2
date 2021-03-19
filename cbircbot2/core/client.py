@@ -4,6 +4,7 @@ from cbircbot2.core.auth import AuthClient
 import time
 import selectors
 from cbircbot2.core.colors import *
+import traceback
 from cbircbot2.core.modules import IrcModules
 
 class IrcClient:
@@ -81,15 +82,14 @@ class IrcClient:
 
             try:
                 self.modules_process = mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
-                self.modules_process.daemon = True
+                #self.modules_process.daemon = True
                 self.modules_process.start()
+                #self.modules_process.join()
             except Exception as e:
                 print(COLOR_RED +  "main daemon failed!" + COLOR_RESET)
                 print(COLOR_RED + "exception: {0}".format(str(e)) + COLOR_RESET)
                 print()
                 self.sock.exit_gracefully()
-
-
             return True
 
         return False
@@ -166,17 +166,14 @@ class IrcClient:
                         if not module_instance:
                             continue
 
-
-
                         if command in module_instance.registered_commands:
-                            print(module_instance.registered_commands)
-                            print( COLOR_YELLOW + "{cmd}".format(cmd=dir(module_instance.registered_commands[command])) + COLOR_RESET)
 
                             try:
                                 module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
                             except Exception as e:
                                 print("Command: {0} not Found".format(command))
                                 print("Exception: {ex}".format(ex=str(e)))
+                                print(traceback.print_exc())
                                 continue
 
                         else:
@@ -187,42 +184,6 @@ class IrcClient:
                         print("Module Not Found!")
                         print(BG_RED + COLOR_BLACK + "Exception: {ex}".format(ex=str(e)) + BG_RESET + COLOR_RESET )
                         continue
-
-
-
-
-
-
-
-                    """
-                    for mod in irc.modules.module_folder_list:
-                        if mod.find('__pycache__') != -1:
-                            del irc.modules.module_folder_list[mod]
-                            continue
-
-                        m = irc.modules.get_module_instance(mod)
-
-
-                        if not m:
-                            print("module {0} not found".format(mod))
-                            continue
-
-                        if data['message'].lower().find(m.MODULE_NAME.lower()) != -1:
-                            continue
-
-                        module_name = m.MODULE_NAME
-
-                        for cmd in m.registered_commands:
-                            cmd_obj = m.registered_commands[cmd]
-                            str_cmd = "{prefix} {module_name} {command}".format(prefix=cmd_obj.prefix,
-                                                                                module_name=module_name,
-                                                                                command=cmd_obj.cmd)
-                            if data['message'].lower() == cmd_obj.cmd.lower():
-                                m.registered_commands[cmd_obj.cmd].run(m, full_command=str_cmd, client=irc, data=data)
-                                break
-
-                            continue
-                    """
 
 
     ## END MULTIPROCESSING CALLBACK ALERT

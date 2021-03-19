@@ -3,6 +3,7 @@ import transaction
 import ZODB
 from ZEO import ClientStorage
 import ZODB.config
+import contextlib
 
 from .updates import init_db as _init
 #from updates import init_db as _init
@@ -34,16 +35,21 @@ class UserDB(object):
                 self.storage = ZODB.FileStorage.FileStorage(file_name=db_name, blob_dir='.blob')
                 self.db = ZODB.DB(self.storage)
             else:
-                self.db = ZODB.config.databaseFromURL('zeo.conf')
+                self.storage = ClientStorage.ClientStorage((host,port))
+                self.db = ZODB.DB(self.storage)
 
             self.connection = self.db.open()
             self.root = self.connection.root()
 
             _init(self)
 
+
+
             self.users = self.root['users']
             self.piadas = self.root['piadas']
             self.admin  = self.root['admin']
+
+
             pass
 
 
@@ -73,6 +79,27 @@ class UserDB(object):
     def abort(self):
         tr = transaction.get()
         tr.abort()
+
+
+
+    def get_transaction(self):
+        trans = transaction.TransactionManager()
+        return trans
+
+
+    @contextlib.contextmanager
+    def thread_commit(self, user = None, notes = None):
+        trans = transaction.TransactionManager()
+
+        if user:
+            trans.get().setUser(user)
+
+        if notes:
+            trans.get().note(notes)
+
+
+        trans.commit()
+
 
 
 if __name__ == "__main__":

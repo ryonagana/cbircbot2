@@ -40,14 +40,16 @@ class IrcModules(object):
             inst = self.create_instance(mod)
             #print ("Loaded Module: {module}".format(module=mod))
             if inst:
-                self.module_instances_list[mod] = inst()
-                self.module_instances_list[mod].start(self.irc_client)
+                self.module_instances_list[mod.lower()] = inst()
+                self.module_instances_list[mod.lower()].start(self.irc_client)
 
     def get_module_instance(self, name):
         try:
 
-            if name in self.module_instances_list:
-                return self.module_instances_list[name]
+
+
+            if name.lower() in self.module_instances_list:
+                return self.module_instances_list[name.lower()]
             else:
                 raise Exception("Module {mod_name} Not Found".format(mod_name=name))
         except Exception as e:
@@ -84,3 +86,6 @@ class IrcModules(object):
             return None
 
 
+    def end_all_modules(self):
+        for mod in self.module_instances_list:
+            mod.end()

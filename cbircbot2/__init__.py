@@ -16,7 +16,7 @@ def main():
     params = EnvironmentParams()
     sock = Socket(params.HOSTNAME, params.PORT, params.SSL_ENABLED)
     irc = IrcClient(sock, params)
-    modules = IrcModules({'modules': params.MODULES, 'client': irc })
+    modules = IrcModules(modules=params.MODULES, client=irc )
     text = InputText(irc)
 
     sel = selectors.DefaultSelector()
@@ -48,4 +48,5 @@ def main():
     except Exception as ex:
         traceback.print_exc()
     finally:
+        modules.end_all_modules()
         sock.exit_gracefully()
