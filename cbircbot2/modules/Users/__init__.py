@@ -23,10 +23,7 @@ class Users(IrcModuleInterface):
 
     def start(self,client):
         super().start(client)
-        db = UserDB('d', 'localhost', 9100)
-        db.close()
-
-
+        
         self.db_addr = self.irc.params.ZEO_ADDRESS
         self.db_port = self.irc.params.ZEO_PORT
 
