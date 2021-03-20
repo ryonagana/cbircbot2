@@ -1,5 +1,8 @@
 import os
 import sys
+
+sys.path.insert(0, '..' )
+
 import traceback
 import zlib
 import datetime
