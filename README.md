@@ -22,6 +22,11 @@ foo@bar:~$ pip3 install -r requirements.txt
 
 
 ### Edit file run.sh 
+
+```console
+foo@bar:~$ cp run.sh_skel run.sh
+```
+
 ```console
 foo@bar:~$ vim run.sh
 ```

@@ -16,6 +16,7 @@ def blank_db(root):
 
 
 
+
 def init_db(zodb):
     update(zodb, 'version', blank_db, VERSION_UPDATE)
     pass
@@ -28,8 +29,8 @@ def update(zodb, version_key = 'version', init_callback = None, update = None):
     if version is None:
         init_callback(zodb.root)
         msg = "Starting a New Database Version {ver}".format(ver=version)
-        print(msg)
         zodb.commit("system", msg)
+        print(msg)
         return
 
     keys = list(update.keys())

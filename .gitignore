@@ -6,3 +6,5 @@ cbircbot2/core/__pycache__/
 d
 d.*
 run.sh
+cli/*.bkp
+.blob*
