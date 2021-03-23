@@ -176,8 +176,8 @@ class Users(IrcModuleInterface):
             user = db.users.has_key(nick)
 
             if not user:
-                self.register_user(sender)
-                db.users[sender].add_karma()
+                self.register_user(nick)
+                db.users[nick].add_karma()
                 db.commit()
                 #self.irc.msg_to_channel(self.irc.params.CHANNEL, "User not Found. Sorry")
                 #self.db.users[nick] = UserModel(nick, date.today())
@@ -186,14 +186,13 @@ class Users(IrcModuleInterface):
                 db.users[nick].add_karma()
                 db.commit()
 
+            self.irc.msg_to_channel(self.irc.params.CHANNEL,
+                                    "{nick} karma++  (total: {karma})".format(nick=nick, karma=db.users[nick].karma))
+
         except Exception as e:
             print(traceback.print_exc())
         finally:
             db.close()
-
-
-        self.irc.msg_to_channel(self.irc.params.CHANNEL,
-                           "{nick} karma++  (total: {karma})".format(nick=nick, karma=db.users[nick].karma))
         return
 
 
