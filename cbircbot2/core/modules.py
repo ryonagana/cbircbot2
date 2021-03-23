@@ -28,13 +28,8 @@ class IrcModules(object):
             self.module_folder_list = [l for l in lines.split("\n")]
             fp.close()
 
-
-
-
-
-
         for mod in self.module_folder_list:
-            if mod == "__pycache__":
+            if mod == "__pycache__" or mod == "":
                 continue
 
             inst = self.create_instance(mod)

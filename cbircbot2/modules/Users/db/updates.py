@@ -1,17 +1,39 @@
 import BTrees.OOBTree as _oob
+import BTrees.IOBTree as _iobtree
 
 def db_version_1(root):
     pass
 
+def db_version_2(root):
+
+    piada_list = []
+
+    if root['piadas']:
+        for index,p in enumerate(root['piadas'].values()):
+            piada_list.append(p)
+            del root.piadas[index]
+
+        root.commit()
+
+    del root['piadas']
+
+    root['piadas'] = _iobtree.IOBTree()
+
+    for p in piada_list:
+        root['piadas'].append(p)
+
+    pass
+
 VERSION_UPDATE = {
-    1: db_version_1
+    1: db_version_1,
+    2: db_version_2
 }
 
 
 def blank_db(root):
     root['users'] = _oob.OOBTree()
     root['admin'] = _oob.OOBTree()
-    root['piadas'] = _oob.OOBTree()
+    root['piadas'] = _iobtree.IOBTree()
     root['version'] = 1
 
 
@@ -45,4 +67,5 @@ def update(zodb, version_key = 'version', init_callback = None, update = None):
 
         msg = "updating Database rom version {old_ver} to {new_ver}".format(old_ver=version, new_ver=value_from+1)
         zodb.commit("system", msg)
+        print(msg)
         return
