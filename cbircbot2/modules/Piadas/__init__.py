@@ -153,8 +153,8 @@ class Piadas(IrcModuleInterface):
                 self.irc.msg_to_channel(self.irc.params.CHANNEL, "Nenhuma Piada cadastrada!")
                 return
 
-
-            piada = random.choice(piadas)
+            sorteio = random.sample(piadas,len(piadas))
+            piada = random.choice(sorteio)
 
             self.irc.msg_to_channel(self.irc.params.CHANNEL,  piada.piada)
             pass
