@@ -1,5 +1,5 @@
 from cbircbot2.core.command import Command
-
+import re
 
 class IrcModuleInterface(object):
     ID = 0  # must be unique default bot ID 0-1000  please use 1000+
@@ -79,6 +79,11 @@ class IrcModuleInterface(object):
     def cmd_help_generator(self):
         self.register_cmd("!help", self.help_func, self.CMD_PRIVATE, "Default help for {0}".format(self.MODULE_NAME))
 
+
+    @staticmethod
+    def remove_spaces(str):
+        string = re.sub('\s{2,}', ' ', str)
+        return string
 
     @classmethod
     def register_cmd(cls, command, callback, access=0, description=""):
