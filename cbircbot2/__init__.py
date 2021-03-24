@@ -11,6 +11,7 @@ import traceback
 import  signal
 import time
 import threading
+import logging
 
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
@@ -74,11 +75,13 @@ def main():
 
     irc.auth(modules=modules)
 
+    closed = False
+
     try:
 
         fulldata = None
 
-        while True:
+        while not closed:
 
             event = sel.select(0.1)
 
@@ -89,12 +92,14 @@ def main():
                 if fulldata:
                     irc.bot_loop(fulldata)
                     irc.parse(fulldata)
-
-
-
+                else:
+                    closed = True
 
     except KeyboardInterrupt as ex:
-        traceback.print_exc()
+        msg = traceback.print_exc()
+        logging.critical(msg)
+
     finally:
+        irc.modules_process.join()
         modules.end_all_modules()
         sock.exit_gracefully()

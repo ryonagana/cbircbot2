@@ -6,6 +6,11 @@ import selectors
 from cbircbot2.core.colors import *
 import traceback
 from cbircbot2.core.modules import IrcModules
+import logging
+import threading
+import queue
+
+logging.basicConfig(filename="log.txt")
 
 class IrcClient:
     def __init__(self, sock=None, params=None, *args, **kwargs):
@@ -20,7 +25,7 @@ class IrcClient:
         self.modules = None
         self.auth_user = AuthClient(self)
         self.modules_process = None
-        self.modules_queue = mp.SimpleQueue()
+        self.modules_queue = queue.Queue()
 
     def get_socket(self):
         return self.sock.get_sock()
@@ -81,14 +86,16 @@ class IrcClient:
             self.end_motd_detect = True
 
             try:
-                self.modules_process = mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
-                #self.modules_process.daemon = True
+                self.modules_process = threading.Thread(target=self.process_modules_worker, args=(self,), daemon=True)  #mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
                 self.modules_process.start()
-                #self.modules_process.join()
+
             except Exception as e:
+
+
                 print(COLOR_RED +  "main daemon failed!" + COLOR_RESET)
                 print(COLOR_RED + "exception: {0}".format(str(e)) + COLOR_RESET)
                 print()
+                logging.critical("main daemon failed close")
                 self.sock.exit_gracefully()
             return True
 
@@ -127,12 +134,15 @@ class IrcClient:
 
 
     # MULTIPROCESSING CALLBACK ALERT
-    def process_modules_worker(self, queue, irc):
+    def process_modules_worker(self, irc):
 
         while True:
-            msg = queue.get()
+            msg = self.modules_queue.get()
 
-            if msg and msg.find('PRIVMSG') != -1:
+            if not msg:
+                continue
+
+            if msg.find('PRIVMSG') != -1:
                 is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
 
                 if is_message:
@@ -185,6 +195,9 @@ class IrcClient:
                         print("Module Not Found!")
                         print(BG_RED + COLOR_BLACK + "Exception: {ex}".format(ex=str(e)) + BG_RESET + COLOR_RESET )
                         continue
+
+            self.modules_queue.task_done()
+            time.sleep(0.5)
 
 
     ## END MULTIPROCESSING CALLBACK ALERT
