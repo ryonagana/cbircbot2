@@ -8,3 +8,4 @@ d.*
 run.sh
 cli/*.bkp
 .blob*
+log.txt

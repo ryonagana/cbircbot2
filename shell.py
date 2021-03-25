@@ -11,3 +11,4 @@ from cbircbot2.core.input import InputText
 
 from cbircbot2.modules.Users.db.models.AdminModel import AdminModel, UserModel
 from cbircbot2.modules.Users.db.models.PiadaModel import PiadaModel
+db = UserDB('d','localhost',9100)
