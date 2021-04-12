@@ -20,7 +20,7 @@ requests==2.25.1
 six==1.15.0
 traitlets==5.0.5
 transaction==3.0.1
-urllib3==1.26.3
+urllib3==1.26.4
 wcwidth==0.2.5
 zc.lockfile==2.0
 ZConfig==3.5.0
