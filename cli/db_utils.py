@@ -24,9 +24,18 @@ BACKUP_FOLDER = os.path.join(ROOT, 'cli')
 DB_PATH = os.path.join(ROOT, 'd')
 
 print(BACKUP_FOLDER)
+
+load_db_with_zeo = False
+
+def get_database():
+    if load_db_with_zeo:
+        return UserDB('d', 'localhost', 9100)
+
+    return get_database()
+
 def create_fresh_db():
     try:
-        db = UserDB(DB_PATH)
+        db = get_database()
         db.close()
     except Exception as e:
         print(traceback.print_exc())
@@ -36,12 +45,16 @@ def menu_options_str():
     print ("1 - Create a Fresh Database")
     print ("2 - Backup Database (WIP)")
     print ("3 - Restore Database (WIP)")
-    print ("4 - Exit")
+    print ("4 - Add Admin")
+    print ("5 - Add User")
+    print ("6 - List all Admins")
+    print ("7 - Search Admin By nickname " )
+    print ("q - Exit")
 
 def backup_db():
 
     try:
-        db = UserDB(DB_PATH)
+        db = get_database()
 
         file = {}
 
@@ -138,6 +151,89 @@ def load_db():
 def import_db(list):
     pass
 
+def  add_admin_user():
+    is_add = True
+    while is_add:
+        name = input("(Type Name): ")
+
+        try:
+            db = get_database()
+            db.admin[name] = AdminModel(name)
+            db.commit()
+
+            if db.admin.has_key(name):
+                print("user: {name} was successfully added!".format(name=name))
+            else:
+                print("an error was caught when tried to add {nick}".format(nick=name))
+
+        except Exception as e:
+            print("a error ocurred while trying to add an user: " + e)
+            is_add = False
+            pass
+        finally:
+            db.close()
+
+            while 1:
+                new_user = input("Do You Want to Add More Admin (y/n)")
+                if new_user == "y" or new_user == "Y":
+                    break
+                else:
+                    is_add  = False
+                    break
+
+
+
+    pass
+
+def list_all_admins():
+
+    try:
+        db = get_database()
+
+        for i, user in enumerate(db.admin.values(), start=1):
+            print(i, user.nick)
+        out = input("Press Any Key to Continue")
+        pass
+    except Exception as e:
+        print(e)
+        pass
+    finally:
+        db.close()
+
+    pass
+
+def search_user_by_nickname():
+    has_user = True
+    while has_user:
+
+        try:
+            db = get_database()
+            name = input("(type admin name: ")
+
+            if not db.admin.has_key(name):
+                print("User {0} does not exists".format(name))
+
+
+            user = db.admin[name]
+
+            print("nick: {0}".format(user.nick))
+            print("allowed: {0}".format(user.allowed_bot))
+        except Exception as e:
+            pass
+        finally:
+            db.close()
+
+        while 1:
+            find = input("wanna to find more admins? (y/n): ")
+
+            if find == "y" or find == "Y":
+                break
+            else:
+                has_user = False
+                break
+
+    pass
+
 def option_parse(opt):
 
     if opt == 1:
@@ -152,6 +248,15 @@ def option_parse(opt):
         load_db()
         pass
 
+    if opt == 4:
+        add_admin_user()
+        pass
+    if opt == 6:
+        list_all_admins()
+        pass
+    if opt == 7:
+        search_user_by_nickname()
+
     return opt
 
 def menu():
@@ -162,11 +267,14 @@ def menu():
             menu_options_str()
 
             opt = input(">>> ")
+
+            if opt == 'q':
+                sys.exit(0)
+
             selected = option_parse(int(opt))
 
 
-            if(selected == 4):
-                sys.exit(0)
+
         except Exception as ex:
             print("{opt} Is An Invalid Option".format(opt=opt))
             pass
@@ -177,5 +285,13 @@ def main():
     pass
 
 if __name__ == "__main__":
+
+    if sys.argv[1].startswith('--zeo'):
+        load_db_with_zeo = True
+        print ("Loading db_utils with ZEO Support")
+    else:
+        print ("Loading db_utils with Default Filestorage")
+        pass
+
     main()
     pass
