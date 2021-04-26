@@ -85,7 +85,7 @@ class IrcModules(object):
         for mod in self.module_instances_list.values():
             mod.end()
 
-    def broadcast_message_all_modules(self, message):
+    def broadcast_message_all_modules(self, *args, **kwargs):
 
         for m in self.module_instances_list.values():
-            m.on_message(message)
+            m.on_message(**kwargs)

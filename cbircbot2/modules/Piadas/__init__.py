@@ -198,10 +198,3 @@ class Piadas(IrcModuleInterface):
         except Exception as e:
             print(e)
             print(traceback.print_exc())
-
-
-
-
-    def on_message(self, message):
-        super().on_message(message)
-

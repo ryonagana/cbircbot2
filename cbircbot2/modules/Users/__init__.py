@@ -37,7 +37,7 @@ class Users(IrcModuleInterface):
         super().end(*args, **kwargs)
         pass
 
-    def is_admin(self, nick):
+    def __is_admin(self, nick):
 
         db = UserDB('d', "localhost", 9100)
         try:
@@ -58,8 +58,39 @@ class Users(IrcModuleInterface):
 
         pass
 
+    def __add_karma(self, name):
+        db = UserDB('d', "localhost", 9100)
+        user = db.users.has_key(name)
 
-    def register_user(self, name):
+        if not user:
+            self.__register_user(name)
+            db.users[name].add_karma()
+            db.commit()
+            db.close()
+            return db.users[name].karma
+
+        db.users[name].add_karma()
+        db.commit()
+        db.close()
+        return db.users[name].karma
+
+    def __remove_karma(self, name):
+        db = UserDB('d', "localhost", 9100)
+        user = db.users.has_key(name)
+
+        if not user:
+            self.__register_user(name)
+            db.users[name].remove_karma()
+            db.close()
+            db.commit()
+            return db.users[name].karma
+
+        db.users[name].remove_karma()
+        db.commit()
+        db.close()
+        return db.users[name].karma
+
+    def __register_user(self, name):
         db = UserDB('d', "localhost", 9100)
 
         user = db.users.has_key(name)
@@ -103,7 +134,7 @@ class Users(IrcModuleInterface):
 
                 self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: You have {karma} {p}".format(sender=sender,p=point_m,karma=karma_count))
             else:
-                self.register_user(sender)
+                self.__register_user(sender)
 
                 point_m = "point"
                 if db.users[sender].karma > 1:
@@ -135,7 +166,7 @@ class Users(IrcModuleInterface):
 
         nick = params[3]
 
-        if not self.is_admin(sender):
+        if not self.__is_admin(sender):
             self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=nick))
             return
 
@@ -176,15 +207,10 @@ class Users(IrcModuleInterface):
             user = db.users.has_key(nick)
 
             if not user:
-                self.register_user(nick)
-                db.users[nick].add_karma()
-                db.commit()
-                #self.irc.msg_to_channel(self.irc.params.CHANNEL, "User not Found. Sorry")
-                #self.db.users[nick] = UserModel(nick, date.today())
-                #self.db.users[nick].add_karma()
+                self.__register_user(nick)
+                self.__add_karma(nick)
             else:
-                db.users[nick].add_karma()
-                db.commit()
+                self.__add_karma(nick)
 
             self.irc.msg_to_channel(self.irc.params.CHANNEL,
                                     "{nick} karma++  (total: {karma})".format(nick=nick, karma=db.users[nick].karma))
@@ -212,21 +238,14 @@ class Users(IrcModuleInterface):
         nick = params[3]
         is_allowed = False
 
-        #if not self.is_admin(sender):
-        #    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{sender}: you're not allowed to do this!".format(sender=sender))
-        #    return
-
-
         try:
             user = db.users.has_key(nick)
 
             if not user:
-                self.register_user(nick)
-                db.users[nick].remove_karma()
-                db.commit()
+                self.__register_user(nick)
+                self.__remove_karma(nick)
             else:
-                db.users[nick].remove_karma()
-                db.commit()
+                self.__remove_karma(nick)
 
         except Exception as e:
             print(traceback.print_exc())
@@ -252,7 +271,66 @@ class Users(IrcModuleInterface):
     def show_jokes(self):
         pass
 
-    def on_message(self, message):
-        super().on_message(message)
+
+    def __onmessage_karma_points_add(self, *args, **kwargs):
+        nick,ident,channel,message = kwargs.values()
+        nick= message.split('++')
+        print(nick)
+        try:
+            db=UserDB('d', "localhost", 9100)
+            user=db.users.has_key(nick)
+
+            if not user:
+                self.__register_user(nick)
+                self.__add_karma(nick)
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick[0],
+                                                                                                             points=
+                                                                                                             db.users[
+                                                                                                                 nick].karma))
+                return
+
+            self.__add_karma(nick)
+            self.irc.msg_to_channel(self.irc.params.CHANNEL,
+                                    "{n} has {points} Karma Points".format(n=nick[0], points=db.users[nick].karma))
+        except Exception as e:
+            print(e)
+            print(traceback.print_exc())
+        finally:
+            db.close()
 
 
+    def __onmessage_karma_points_remove(self, *args, **kwargs):
+        nick,ident,channel,message = kwargs.values()
+        nick= message.split('--')
+        print(nick)
+        try:
+            db=UserDB('d', "localhost", 9100)
+            user=db.users.has_key(nick)
+
+            if not user:
+                self.__register_user(nick)
+                self.__remove_karma(nick)
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick[0],
+                                                                                                             points=
+                                                                                                             db.users[
+                                                                                                                 nick].karma))
+                return
+
+            self.__remove_karma(nick)
+            self.irc.msg_to_channel(self.irc.params.CHANNEL,
+                                    "{n} has {points} Karma Points".format(n=nick[0], points=db.users[nick].karma))
+        except Exception as e:
+            print(e)
+            print(traceback.print_exc())
+        finally:
+            db.close()
+
+    def on_message(self, *args, **kwargs):
+
+        if "++" in kwargs['message']:
+            self.__onmessage_karma_points_add(**kwargs)
+            return
+
+        if "--" in kwargs['message']:
+            self.__onmessage_karma_points_remove(**kwargs)
+            return

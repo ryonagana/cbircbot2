@@ -13,7 +13,6 @@ class IrcModuleInterface(object):
     CMD_PUBLIC = 1
     CMD_PRIVATE = 2
     CMD_BOTH = 3
-    CMD_BOTH = 3
     registered_commands = {}
     irc = None
 
@@ -104,8 +103,17 @@ class IrcModuleInterface(object):
             pass
         pass
 
-    def on_message(self, message):
+    def on_message(self, *args, **kwargs):
         pass
 
     def get_message(self):
         return self.message
+
+    def invoke_cmd(self, name, *args, **kwargs):
+
+        if name not in self.registered_commands:
+            print("The command: {name} is not in registered commands - cannot be invoked".format(name=name))
+            return
+
+        self.registered_commands[name].run(**kwargs)
+        return

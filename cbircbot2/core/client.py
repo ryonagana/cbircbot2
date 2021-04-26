@@ -143,7 +143,7 @@ class IrcClient:
                 continue
 
             if msg.find('PRIVMSG') != -1:
-                is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9])$", msg)
+                is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
 
                 if is_message:
 
@@ -155,7 +155,7 @@ class IrcClient:
                         'message': is_message.groups()[3],  # message
                     }
 
-                    irc.modules.broadcast_message_all_modules(data['message'])
+                    irc.modules.broadcast_message_all_modules(**data)
 
                     if not data['message'].strip("").startswith("?"):
                         #self.privmsg_event(data['message'])
