@@ -4,6 +4,7 @@ from cbircbot2.modules.Users.db.db import UserDB
 from cbircbot2.modules.Users.db.models.AdminModel import UserModel, AdminModel
 from datetime import date
 import traceback
+import  re
 
 class Users(IrcModuleInterface):
 
@@ -327,10 +328,14 @@ class Users(IrcModuleInterface):
 
     def on_message(self, *args, **kwargs):
 
-        if "++" in kwargs['message']:
+        #remove space easiest way the first part is the only thing matter
+        nick=kwargs['message'].split(' ')[0] #clean and get the first element
+        kwargs['message'] = nick  #inject the new message and discards the rest after space
+
+        
+        if kwargs['message'].startswith(nick) and "++" in kwargs['message']:
             self.__onmessage_karma_points_add(**kwargs)
             return
-
-        if "--" in kwargs['message']:
+        if kwargs['message'].startswith(nick) and "--" in kwargs['message']:
             self.__onmessage_karma_points_remove(**kwargs)
             return
