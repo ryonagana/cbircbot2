@@ -274,16 +274,16 @@ class Users(IrcModuleInterface):
 
     def __onmessage_karma_points_add(self, *args, **kwargs):
         nick,ident,channel,message = kwargs.values()
-        nick= message.split('++')
-        print(nick)
+        nick = message.split("++")[0].strip()
+        print(nick, dir(nick))
         try:
-            db=UserDB('d', "localhost", 9100)
-            user=db.users.has_key(nick)
+            db= UserDB('d', "localhost", 9100)
+            user= db.users.has_key(nick)
 
             if not user:
                 self.__register_user(nick)
                 self.__add_karma(nick)
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick[0],
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick,
                                                                                                              points=
                                                                                                              db.users[
                                                                                                                  nick].karma))
@@ -291,7 +291,7 @@ class Users(IrcModuleInterface):
 
             self.__add_karma(nick)
             self.irc.msg_to_channel(self.irc.params.CHANNEL,
-                                    "{n} has {points} Karma Points".format(n=nick[0], points=db.users[nick].karma))
+                                    "{n} has {points} Karma Points".format(n=nick, points=db.users[nick].karma))
         except Exception as e:
             print(e)
             print(traceback.print_exc())
@@ -301,7 +301,7 @@ class Users(IrcModuleInterface):
 
     def __onmessage_karma_points_remove(self, *args, **kwargs):
         nick,ident,channel,message = kwargs.values()
-        nick= message.split('--')
+        nick = message.split("--")[0].strip()
         print(nick)
         try:
             db=UserDB('d', "localhost", 9100)
@@ -310,7 +310,7 @@ class Users(IrcModuleInterface):
             if not user:
                 self.__register_user(nick)
                 self.__remove_karma(nick)
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick[0],
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick,
                                                                                                              points=
                                                                                                              db.users[
                                                                                                                  nick].karma))
@@ -318,7 +318,7 @@ class Users(IrcModuleInterface):
 
             self.__remove_karma(nick)
             self.irc.msg_to_channel(self.irc.params.CHANNEL,
-                                    "{n} has {points} Karma Points".format(n=nick[0], points=db.users[nick].karma))
+                                    "{n} has {points} Karma Points".format(n=nick, points=db.users[nick].karma))
         except Exception as e:
             print(e)
             print(traceback.print_exc())
