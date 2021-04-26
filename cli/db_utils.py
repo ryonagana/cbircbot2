@@ -286,12 +286,15 @@ def main():
 
 if __name__ == "__main__":
 
-    if sys.argv[1].startswith('--zeo'):
-        load_db_with_zeo = True
-        print ("Loading db_utils with ZEO Support")
-    else:
-        print ("Loading db_utils with Default Filestorage")
-        pass
+    try:
+        if sys.argv[1]:
+            if sys.argv[1].startswith('--zeo'):
+                load_db_with_zeo = True
+                print ("Loading db_utils with ZEO Support")
+        else:
+            print ("Loading cb_utils without ZEO")
+    except IndexError as ie:
+        print ("Loading cb_utils without ZEO ")
 
     main()
     pass

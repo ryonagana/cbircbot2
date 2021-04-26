@@ -100,6 +100,8 @@ def main():
         logging.critical(msg)
 
     finally:
-        irc.modules_process.join()
+
         modules.end_all_modules()
         sock.exit_gracefully()
+
+    irc.modules_process.join()
