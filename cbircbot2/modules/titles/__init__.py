@@ -58,42 +58,7 @@ class titles(IrcModuleInterface):
         return
         
         
-if __name__ == "__main__":
-    t = titles()
-    
-    msg = "falae galera acessa ai http://goOOogle.com acessa ai er"
-    
-    extract_link = re.compile(r"(?:(https|http)):\/\/(?:\w{3})(\S+)?", re.IGNORECASE)
-    match = extract_link.search(msg)
-   
-    
-    #match = re.match(r'''(?:(http|https):\/\/(?:\S)+)?''', msg, re.IGNORECASE)
-   # print(match)
-    
-    #protocol = match.group(2)
-    #site = match.group(3)
-    
-    #full_site = protocol + site
-    
-    #print(full_site)
-     
-    
-    #if t._detect_protocol(msg):
-        #print("teste sucesso")
-    #else:
-    #    print("failed")  
-        
-   
-   
-      
-    
-    
-    #req = requests.get("http://www.uol.com.br")
-    #html = req.text
-    
-    #title = html[html.find('<title>') + 7 : html.find('</title>')]
-    
-    #print(title)
+
    
         
       
