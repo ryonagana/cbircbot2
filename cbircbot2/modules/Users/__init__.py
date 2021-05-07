@@ -295,7 +295,7 @@ class Users(IrcModuleInterface):
         nick = message.split("++")[0].strip()
 
         if self.__prevent_self_karma(sender,nick):
-            self.irc.msg_to_channel(channel, "{nick} access denied", nick=sender)
+            self.irc.msg_to_channel(channel, "{nick} not allowed to give karma to yourself.".format(nick=sender))
             return
         try:
             db= UserDB('d', "localhost", 9100)
@@ -329,7 +329,7 @@ class Users(IrcModuleInterface):
         nick = message.split("--")[0].strip()
 
         if self.__prevent_self_karma(sender,nick):
-            self.irc.msg_to_channel(channel, "{nick} access denied".format(nick=sender))
+            self.irc.msg_to_channel(channel, "{nick} not allowed to remove karma of yourself".format(nick=sender))
             return
 
         db=UserDB('d', "localhost", 9100)
