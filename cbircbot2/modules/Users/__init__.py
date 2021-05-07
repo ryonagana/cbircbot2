@@ -17,11 +17,6 @@ class Users(IrcModuleInterface):
     def __init__(self):
         super().__init__()
 
-
-
-
-
-
     def start(self,client):
         super().start(client)
         
@@ -208,11 +203,16 @@ class Users(IrcModuleInterface):
             user = db.users.has_key(nick)
 
             if not user:
-                self.__register_user(nick)
-                self.__add_karma(nick)
+                if self.__is_admin(sender):
+                    self.__register_user(nick)
+                    self.__add_karma(nick)
+                else:
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{0} Access Denied!".format(sender))
+                    return
             else:
                 self.__add_karma(nick)
 
+            self.__karma_message(nick, "karma++")
             self.irc.msg_to_channel(self.irc.params.CHANNEL,
                                     "{nick} karma++  (total: {karma})".format(nick=nick, karma=db.users[nick].karma))
 
@@ -222,6 +222,31 @@ class Users(IrcModuleInterface):
             db.close()
         return
 
+
+    def __karma_message(self, nick, type):
+        db = UserDB('d', "localhost", 9100)
+        msg=""
+        try:
+            karma = db.users[nick].karma
+
+            if karma < -15:
+                msg="(Otário) {nick} {tp}   (total: {karma})".format(nick=nick, tp=type,  karma=db.users[nick].karma)
+            elif karma >= 0 and karma < 10:
+                msg="{nick} {tp} (total: {karma})".format(nick=nick, tp=type, karma=db.users[nick].karma)
+            elif karma > 10:
+                msg="(Gente Final) {tp} {nick}  (total: {karma})".format(nick=nick, tp=type, karma=db.users[nick].karma)
+            elif karma > 20:
+                msg="(Gente Bonissima) {tp} {nick} (total: {karma})".format(nick=nick, tp=type, karma=db.users[nick].karma)
+            else:
+                msg="{tp} {nick}  (total: {karma})".format(nick=nick,tp=type, karma=db.users[nick].karma)
+
+            self.irc.msg_to_channel(self.irc.params.CHANNEL, msg)
+
+        except Exception as e:
+            print(traceback.print_exc())
+        finally:
+            db.close()
+        pass
 
     def user_remove_karma(self, *args, **kwargs):
         db = UserDB('d', "localhost", 9100)
@@ -243,8 +268,12 @@ class Users(IrcModuleInterface):
             user = db.users.has_key(nick)
 
             if not user:
-                self.__register_user(nick)
-                self.__remove_karma(nick)
+                if self.__is_admin(sender):
+                    self.__register_user(nick)
+                    self.__remove_karma(nick)
+                else:
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{0} Access Denied!".format(sender))
+                    return
             else:
                 self.__remove_karma(nick)
 
@@ -253,19 +282,7 @@ class Users(IrcModuleInterface):
         finally:
             db.close()
 
-
-        msg = ""
-
-        if db.users[nick].karma < 0:
-            msg = "(Otário) {nick} karma--  (total: {karma})".format(nick=nick, karma=db.users[nick].karma)
-        elif db.users[nick].karma > 10:
-            msg = "(Gente Final) {nick} karma--  (total: {karma})".format(nick=nick, karma=db.users[nick].karma)
-        elif db.users[nick].karma > 20:
-            msg = "(Gente Bonissima) {nick} karma--  (total: {karma})".format(nick=nick, karma=db.users[nick].karma)
-        else:
-            msg = "{nick} karma--  (total: {karma})".format(nick=nick, karma=db.users[nick].karma)
-
-        self.irc.msg_to_channel(self.irc.params.CHANNEL, msg)
+        self.__karma_message(nick,"karma--")
         return
 
 
@@ -274,25 +291,32 @@ class Users(IrcModuleInterface):
 
 
     def __onmessage_karma_points_add(self, *args, **kwargs):
-        nick,ident,channel,message = kwargs.values()
+        sender,ident,channel,message = kwargs.values()
         nick = message.split("++")[0].strip()
-        print(nick, dir(nick))
+
+        if self.__prevent_self_karma(sender,nick):
+            self.irc.msg_to_channel(channel, "{nick} access denied", nick=sender)
+            return
         try:
             db= UserDB('d', "localhost", 9100)
             user= db.users.has_key(nick)
 
             if not user:
-                self.__register_user(nick)
-                self.__add_karma(nick)
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick,
-                                                                                                             points=
-                                                                                                             db.users[
-                                                                                                                 nick].karma))
+                if self.__is_admin(sender):
+                    self.__register_user(nick)
+                    self.__add_karma(nick)
+
+                else:
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{s} Access Denied".format(s=sender))
+                    return
+
+                self.__karma_message(nick)
                 return
 
             self.__add_karma(nick)
-            self.irc.msg_to_channel(self.irc.params.CHANNEL,
-                                    "{n} has {points} Karma Points".format(n=nick, points=db.users[nick].karma))
+            self.__karma_message(nick, "karma++")
+            #self.irc.msg_to_channel(self.irc.params.CHANNEL,
+            #                        "{n} has {points} Karma Points".format(n=nick, points=db.users[nick].karma))
         except Exception as e:
             print(e)
             print(traceback.print_exc())
@@ -301,30 +325,39 @@ class Users(IrcModuleInterface):
 
 
     def __onmessage_karma_points_remove(self, *args, **kwargs):
-        nick,ident,channel,message = kwargs.values()
+        sender,ident,channel,message = kwargs.values()
         nick = message.split("--")[0].strip()
-        print(nick)
+
+        if self.__prevent_self_karma(sender,nick):
+            self.irc.msg_to_channel(channel, "{nick} access denied".format(nick=sender))
+            return
+
+        db=UserDB('d', "localhost", 9100)
+
         try:
-            db=UserDB('d', "localhost", 9100)
             user=db.users.has_key(nick)
 
             if not user:
-                self.__register_user(nick)
-                self.__remove_karma(nick)
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, "{n} has {points} Karma Points".format(n=nick,
-                                                                                                             points=
-                                                                                                             db.users[
-                                                                                                                 nick].karma))
-                return
+                if self.__is_admin(sender):
+                    self.__register_user(nick)
+                    self.__remove_karma(nick)
+
+                else:
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, "{s} Access Denied".format(s=sender))
+                    return
 
             self.__remove_karma(nick)
-            self.irc.msg_to_channel(self.irc.params.CHANNEL,
-                                    "{n} has {points} Karma Points".format(n=nick, points=db.users[nick].karma))
+            self.__karma_message(nick, "karma--")
+
         except Exception as e:
             print(e)
             print(traceback.print_exc())
         finally:
             db.close()
+
+
+    def __prevent_self_karma(self, sender, nick):
+        return sender == nick
 
     def on_message(self, *args, **kwargs):
 
@@ -332,7 +365,7 @@ class Users(IrcModuleInterface):
         nick=kwargs['message'].split(' ')[0] #clean and get the first element
         kwargs['message'] = nick  #inject the new message and discards the rest after space
 
-        
+
         if kwargs['message'].startswith(nick) and "++" in kwargs['message']:
             self.__onmessage_karma_points_add(**kwargs)
             return
