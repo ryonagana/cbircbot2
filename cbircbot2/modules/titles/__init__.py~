@@ -20,7 +20,7 @@ class titles(IrcModuleInterface):
     
     def _detect_protocol(self, msg):
         detect = False
-        if msg.find("http://") or msg.find("https://"):
+        if msg.find("http://")  != -1 or msg.find("https://") != -1 :
             detect = True
         return detect
         
@@ -41,7 +41,6 @@ class titles(IrcModuleInterface):
         link = self._extract_link(message) 
         
         if not link:
-            self.irc.msg_to_channel(self.irc.params.CHANNEL, "{link} is invalid".format(link=link))
             return
         
             
