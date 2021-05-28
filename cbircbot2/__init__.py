@@ -12,6 +12,7 @@ import  signal
 import time
 import threading
 import logging
+import cbircbot2.core.config
 
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
@@ -53,7 +54,9 @@ def background_console(irc, modules):
 
 
 def main():
+    cfg = cbircbot2.core.config.Config()
     params = EnvironmentParams()
+    params.load_from_config(cfg)
     sock = Socket(params.HOSTNAME, params.PORT, params.SSL_ENABLED)
     irc = IrcClient(sock, params)
     modules = IrcModules(modules=params.MODULES, client=irc)

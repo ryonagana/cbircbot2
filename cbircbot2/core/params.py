@@ -1,5 +1,7 @@
 import os
+import traceback
 
+from cbircbot2.core.config import  Config
 class EnvironmentParams:
 
     NICKNAME = "creekman"
@@ -9,9 +11,11 @@ class EnvironmentParams:
     MODULES = "*"
     HOSTNAME = "irc.freenode.net"
     PORT = "6667"
+    NICKSERV_IDENTIFY = False
     SSL_ENABLED = False
     ZEO_ADDRESS = "localhost"
     ZEO_PORT    = 9100
+    
 
     def __init__(self):
         
@@ -74,3 +78,31 @@ class EnvironmentParams:
         except KeyError as key:
             print(key)
             return False
+
+    def load_from_config(self, cfg):
+        
+        if type(cfg) is not Config:
+            raise Exception("Config type is not a Valid Class!")
+        
+        if  not cfg.check_config_exists():
+           cfg.write_conf()
+           cfg.load()
+        else:
+           cfg.load()
+           
+        
+        self.NICKNAME = cfg.get('NICK', 'nickname')
+        self.IDENTD = cfg.get('NICK', 'identd')
+        self.USERNAME = self.NICKNAME
+        self.CHANNEL = cfg.get('CHANNEL', 'channel')
+        self.HOSTNAME = cfg.get('SERVER', 'hostname')
+        self.PORT = cfg.get('SERVER', 'port')
+        self.SSL_ENABLED = cfg.get('SERVER', 'enable_ssl')
+        self.NICKSERV_IDENTIFY = cfg.get('SERVER', 'enable_nickserv_identify')
+        
+        self.ZEO_ADDRESS = cfg.get('ZEO', 'host')
+        self.ZEO_PORT = cfg.get('ZEO', 'port')
+        
+        
+        return
+    

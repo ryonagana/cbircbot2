@@ -11,3 +11,4 @@ cli/*.bkp
 log.txt
 venv/
 .idea
+config.conf
