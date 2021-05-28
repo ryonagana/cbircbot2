@@ -59,15 +59,8 @@ def main():
     modules = IrcModules(modules=params.MODULES, client=irc)
     text = InputText(irc)
 
-    #signal.signal(signal.SIGINT, console_handler)
     sel = selectors.DefaultSelector()
     sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
-
-
-    #bg_console_thread = threading.Thread(target=background_console, args=(irc, modules,))
-    #bg_console_thread.daemon = True
-    #bg_console_thread.start()
-
 
     if not sock.connect():
         print("Error Trying to connect on {server}:{port}".format(server=params.HOSTNAME, port=params.PORT))

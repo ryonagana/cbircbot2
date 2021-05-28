@@ -1,6 +1,5 @@
 
 import multiprocessing as mp
-import threading
 import re
 class InputText(object):
     def __init__(self, parent = None):

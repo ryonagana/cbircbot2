@@ -14,6 +14,8 @@ class EnvironmentParams:
     ZEO_PORT    = 9100
 
     def __init__(self):
+        
+        print(os.environ)
 
         if not self.check_environ_exists('CB_NICKNAME'):
             print("Error: username not found using default: "  + self.NICKNAME)
@@ -40,19 +42,19 @@ class EnvironmentParams:
         else:
             self.MODULES= self.check_environ_exists('CB_MODULES')
 
-        if not self.check_environ_exists('CB_HOSTNAME'):
+        if not self.check_environ_exists('CB_HOST') or not self.check_environ_exists('CB_HOSTNAME'):
             print("Warning: hostname environment var not found -  using default: " + self.HOSTNAME)
         else:
-            self.HOSTNAME= self.check_environ_exists('CB_MODULES')
+            self.HOSTNAME= self.check_environ_exists('CB_HOST')
 
         if not self.check_environ_exists('CB_PORT'):
             print("Warning: port environment var not found - using default: " + self.PORT)
         else:
             self.PORT = self.check_environ_exists('CB_PORT')
 
-        if not self.check_environ_exists('CB_SSL') or self.check_environ_exists('CB_SSL') == int(0):
+        if not self.check_environ_exists('CB_SSL'):
             print("Initializing without SSL connection!")
-        else:
+        elif int(os.environ['CB_SSL']) != int(0):
             self.SSL_ENABLED = True
 
         if not self.check_environ_exists('ZEO_ADDRESS'):
@@ -70,4 +72,5 @@ class EnvironmentParams:
         try:
             return os.environ[key]
         except KeyError as key:
+            print(key)
             return False
