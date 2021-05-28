@@ -96,12 +96,12 @@ class EnvironmentParams:
         self.USERNAME = self.NICKNAME
         self.CHANNEL = cfg.get('CHANNEL', 'channel')
         self.HOSTNAME = cfg.get('SERVER', 'hostname')
-        self.PORT = cfg.get('SERVER', 'port')
-        self.SSL_ENABLED = cfg.get('SERVER', 'enable_ssl')
-        self.NICKSERV_IDENTIFY = cfg.get('SERVER', 'enable_nickserv_identify')
+        self.PORT = int(cfg.get('SERVER', 'port'))
+        self.SSL_ENABLED = bool(cfg.get('SERVER', 'enable_ssl'))
+        self.NICKSERV_IDENTIFY = bool(cfg.get('SERVER', 'enable_nickserv_identify'))
         
-        self.ZEO_ADDRESS = cfg.get('ZEO', 'host')
-        self.ZEO_PORT = cfg.get('ZEO', 'port')
+        #self.ZEO_ADDRESS = cfg.get('ZEO', 'host')
+        #self.ZEO_PORT = cfg.get('ZEO', 'port')
         
         
         return

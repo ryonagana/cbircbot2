@@ -13,7 +13,7 @@ import time
 import threading
 import logging
 import cbircbot2.core.config
-
+import getopt
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
 
@@ -21,6 +21,7 @@ sys.path.append(target_path)
 
 
 console_enable = False
+ssl_enable = False
 
 def console_handler(sig, frame):
     global console_enable
@@ -55,9 +56,22 @@ def background_console(irc, modules):
 
 def main():
     cfg = cbircbot2.core.config.Config()
+    global  ssl_enable
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "s:v", ['ssl'])
+    except getopt.GetoptError as ge:
+        sys.exit(2)
+        
+    for opt,a, in opts:
+        if opt  in ('-s', '--ssl'):
+            ssl_enable = True
+            cfg.set('SERVER', 'enable_ssl', ssl_enable)
+
     params = EnvironmentParams()
+    print(params.SSL_ENABLED)
     params.load_from_config(cfg)
-    sock = Socket(params.HOSTNAME, params.PORT, params.SSL_ENABLED)
+    sock = Socket(params.HOSTNAME, params.PORT, False) #force false while im fixing
     irc = IrcClient(sock, params)
     modules = IrcModules(modules=params.MODULES, client=irc)
     text = InputText(irc)

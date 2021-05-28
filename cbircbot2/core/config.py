@@ -23,7 +23,7 @@ class Config:
             'MODULE_OPTS': {
                 'openweather_api' : ''
     },
-    'ZEO' : {
+        'ZEO' : {
             'host' : 'localhost',
             'port' : 9100
         }
