@@ -43,7 +43,7 @@ class UserModel(persistent.Persistent):
         self.has_admin = val
 
     def __str__(self):
-        return "{name}".format(self.nickname)
+        return "{name}".format(name=self.nickname)
 
     def __eq__(self, other):
         return self.nickname == other.nickname
