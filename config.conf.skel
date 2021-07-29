@@ -1,0 +1,17 @@
+[SERVER]
+hostname = irc.libera.chat
+port = 6667
+enable_ssl = False
+
+[CHANNEL]
+channel = #defaultchan
+
+[NICK]
+identd = Its a Me
+nickname = pythonbot
+password = 
+enable_nickserv_identify = False
+
+[MODULE_OPTS]
+openweather_api = 
+

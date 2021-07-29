@@ -16,42 +16,7 @@ import cbircbot2.core.config
 import getopt
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
-
-
-
-
-console_enable = False
 ssl_enable = False
-
-def console_handler(sig, frame):
-    global console_enable
-    console_enable = not console_enable
-
-
-
-def background_console(irc, modules):
-    while True:
-
-        try:
-            opt = input(">>> ")
-
-            module_name,command_name, params_cmd = opt.split()
-            print(opt)
-            print(module_name, command_name, params_cmd)
-            continue
-
-            if module_name.lower() in  modules.module_instances_list[module_name.lower()]:
-                mod = modules.module_instances_list[module_name.lower()]
-                dir(mod)
-            print("cmd ", opt)
-            time.sleep(0.8)
-
-
-
-        except Exception as e:
-            pass
-
-
 
 
 def main():
@@ -75,7 +40,7 @@ def main():
     irc = IrcClient(sock, params)
     modules = IrcModules(modules=params.MODULES, client=irc)
     text = InputText(irc)
-
+    print(text)
     sel = selectors.DefaultSelector()
     sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
 
@@ -110,7 +75,6 @@ def main():
         logging.critical(msg)
 
     finally:
-
         modules.end_all_modules()
         sock.exit_gracefully()
 
