@@ -95,16 +95,16 @@ class EnvironmentParams:
         else:
             cfg.load()
         
-        self.NICKNAME = cfg.get('NICK', 'nickname')
-        self.IDENTD = cfg.get('NICK', 'identd')
+        self.NICKNAME = str(cfg.get('NICK', 'nickname'))
+        self.IDENTD = str(cfg.get('NICK', 'identd'))
         self.USERNAME = self.NICKNAME
-        self.CHANNEL = cfg.get('CHANNEL', 'channel')
-        self.CHANNEL_PASSWD = cfg.get('CHANNEL', 'passwd')
-        self.HOSTNAME = cfg.get('SERVER', 'hostname')
+        self.CHANNEL = str(cfg.get('CHANNEL', 'channel'))
+        self.CHANNEL_PASSWD = str(cfg.get('CHANNEL', 'passwd'))
+        self.HOSTNAME = str(cfg.get('SERVER', 'hostname'))
         self.PORT = int(cfg.get('SERVER', 'port'))
         self.SSL_ENABLED = cfg.get_bool('SERVER', 'enable_ssl')
         self.NICKSERV_IDENTIFY = cfg.get_bool('NICK', 'enable_nickserv_identify')
-        self.ZEO_DB = cfg.get('ZEO', 'db')
-        self.ZEO_HOST = cfg.get('ZEO', 'host')
-        self.ZEO_PORT = cfg.get('ZEO', 'port')
+        self.ZEO_DB = str(cfg.get('ZEO', 'db'))
+        self.ZEO_HOST = str(cfg.get('ZEO', 'host'))
+        self.ZEO_PORT = int(cfg.get('ZEO', 'port'))
         return

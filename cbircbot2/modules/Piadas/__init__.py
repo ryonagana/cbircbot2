@@ -18,8 +18,8 @@ class Piadas(IrcModuleInterface):
 
 
     def is_admin(self, nick):
-
-        db = UserDB('d', "localhost", 9100)
+    
+        db = UserDB(self.irc.params.ZEO_DB, self.irc.params.ZEO_HOST, self.irc.params.ZEO_PORT)
         try:
             if db.admin.has_key(nick):
                 return True
@@ -52,7 +52,7 @@ class Piadas(IrcModuleInterface):
         params = message.split(" ", 3)
         count_args = len(params) - 3
 
-        db = UserDB('d', 'localhost',9100)
+        db = UserDB(self.irc.params.ZEO_DB, self.irc.params.ZEO_HOST, self.irc.params.ZEO_PORT)
 
         print(params)
 
@@ -88,7 +88,7 @@ class Piadas(IrcModuleInterface):
     def _listar_piadas(self, *args, **kwargs):
         sender = kwargs['data']['sender']
 
-        db =  UserDB('d', 'localhost', 9100)
+        db = UserDB(self.irc.params.ZEO_DB, self.irc.params.ZEO_HOST, self.irc.params.ZEO_PORT)
         self.irc.msg_to_channel(sender,"Lista de Piadas Cadastradas:")
         time.sleep(2)
 
@@ -121,7 +121,7 @@ class Piadas(IrcModuleInterface):
         pass
 
     def cadastrar_nova_piada(self, nick, piada):
-        db = UserDB('d','localhost',9100)
+        db = UserDB(self.irc.params.ZEO_DB, self.irc.params.ZEO_HOST, self.irc.params.ZEO_PORT)
 
         try:
            if db.piadas:
@@ -143,7 +143,7 @@ class Piadas(IrcModuleInterface):
         sender = kwargs['data']['sender']
         params = message.split(" ", 3)
         count_args = len(params) - 3
-        db = UserDB('d', 'localhost', 9100)
+        db = UserDB(self.irc.params.ZEO_DB, self.irc.params.ZEO_HOST, self.irc.params.ZEO_PORT)
 
         try:
 
