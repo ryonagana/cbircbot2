@@ -58,7 +58,7 @@ def main():
     
     try:
         
-        fulldata = None
+        data = None
         
         while not closed:
             
@@ -67,10 +67,10 @@ def main():
             if event:
                 for key, mask in event:
                     callback = key.data
-                    fulldata = callback(key.fileobj)
-                if fulldata:
-                    irc.bot_loop(fulldata)
-                    irc.parse(fulldata)
+                    data = callback(key.fileobj)
+                if data:
+                    irc.bot_loop(data)
+                    irc.parse(data)
                 else:
                     closed = True
     
