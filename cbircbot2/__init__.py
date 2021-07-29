@@ -34,13 +34,14 @@ def main():
             cfg.set('SERVER', 'enable_ssl', ssl_enable)
 
     params = EnvironmentParams()
+    cfg.print_cfg()
     print(params.SSL_ENABLED)
     params.load_from_config(cfg)
     sock = Socket(params.HOSTNAME, params.PORT, False) #force false while im fixing
     irc = IrcClient(sock, params)
     modules = IrcModules(modules=params.MODULES, client=irc)
-    text = InputText(irc)
-    print(text)
+    #text = InputText(irc)
+    #print(text)
     sel = selectors.DefaultSelector()
     sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
 

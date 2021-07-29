@@ -1,31 +1,32 @@
-import os
 import configparser
-import  traceback
+import traceback
+
 
 class Config:
     DEFAULT_CONF = {
-           'SERVER' : {
+           'SERVER': {
                 'hostname': 'irc.libera.chat',
-                'port' : 6667,
-                'enable_ssl' : False,
+                'port': 6667,
+                'enable_ssl': False,
                
-    },
-           'CHANNEL' : {
-                'channel' : "#defaultchan"
+            },
+           'CHANNEL': {
+                'channel': "#defaultchan"
             
-    },
-           'NICK' : {
-            'identd' : 'Its a Me',
-            'nickname' : 'pythonbot',
+            },
+           'NICK': {
+            'identd': 'Its a Me',
+            'nickname': 'pythonbot',
             'password': '',
-            'enable_nickserv_identify' : False
-    },
-            'MODULE_OPTS': {
-                'openweather_api' : ''
-    },
-        'ZEO' : {
-            'host' : 'localhost',
-            'port' : 9100
+            'enable_nickserv_identify': False
+            },
+        'MODULE_OPTS': {
+                'openweather_api':''
+            },
+        'ZEO': {
+            'db': 'd',
+            'host': 'localhost',
+            'port': 9100
         }
 }
 
@@ -35,30 +36,30 @@ class Config:
         self.config['CHANNEL'] = self.DEFAULT_CONF['CHANNEL']
         self.config['NICK'] = self.DEFAULT_CONF['NICK']
         self.config['MODULE_OPTS'] = self.DEFAULT_CONF['MODULE_OPTS']
+        self.config['ZEO'] = self.DEFAULT_CONF['ZEO']
     
     def write_conf(self):
         with open('config.conf',"w") as fp:
             self.config.write(fp)
             
-    def load(self):
+    def load(self) -> object:
         if not self.config.read("config.conf"):
-            print("config ini not found")
-            return
+            raise Exception("Config.conf not found!")
         
         return self.config
         
-    def set(self, group, key, value):
-        try:
-            self.config[group][key] = value
-        except KeyError as k:
-            traceback.print_exc()
+    def set(self, group, key, value) -> bool:
+        
+        if not self.config.set(group,key,value):
+            raise Exception("Config Section: {0} and {1} key not found!".format(group,key))
+        return True
     
-    def get(self, group, key):
-        try:
-            return self.config[group][key]
-        except KeyError as k:
-            traceback.print_exc()
-        return None
+    def get(self, group: str, key: str) -> str:
+        if not self.config.get(group, key):
+            raise Exception("Config Section: {0} and {1} key not found!".format(group,key))
+        
+        val = self.config.get(group, key)
+        return val
     
     def check_config_exists(self):
         found = False
@@ -66,6 +67,12 @@ class Config:
             with open("config.conf","r") as fp:
                 found = True
         except IOError as err:
-            pass
+            print(err)
         
         return found
+    
+    def print_cfg(self) -> None:
+        
+        for section in self.config.sections():
+            for keys in self.config[section]:
+                print("Section:{0} -> {1} : {2}".format(section, keys, self.config[section][keys]))

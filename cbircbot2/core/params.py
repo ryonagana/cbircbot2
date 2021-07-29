@@ -14,7 +14,9 @@ class EnvironmentParams:
     NICKSERV_IDENTIFY = False
     SSL_ENABLED = False
     ZEO_ADDRESS = "localhost"
-    ZEO_PORT    = 9100
+    ZEO_HOST = "localhost"
+    ZEO_PORT = 9100
+    ZEO_DB="d"
     
 
     def __init__(self):
@@ -61,10 +63,10 @@ class EnvironmentParams:
         elif int(os.environ['CB_SSL']) != int(0):
             self.SSL_ENABLED = True
 
-        if not self.check_environ_exists('ZEO_ADDRESS'):
-            print("ZEO Address default localhost")
+        if not self.check_environ_exists('ZEO_HOST'):
+            print("ZEO hostname default localhost")
         else:
-            self.ZEO_ADDRESS = self.check_environ_exists('ZEO_ADDRESS')
+            self.ZEO_HOST = self.check_environ_exists('ZEO_ADDRESS')
 
         if not self.check_environ_exists('ZEO_PORT'):
             print('ZEO default port 9100')
@@ -84,7 +86,7 @@ class EnvironmentParams:
         if type(cfg) is not Config:
             raise Exception("Config type is not a Valid Class!")
         
-        if  not cfg.check_config_exists():
+        if not cfg.check_config_exists():
            cfg.write_conf()
            cfg.load()
         else:
@@ -98,10 +100,11 @@ class EnvironmentParams:
         self.HOSTNAME = cfg.get('SERVER', 'hostname')
         self.PORT = int(cfg.get('SERVER', 'port'))
         self.SSL_ENABLED = bool(cfg.get('SERVER', 'enable_ssl'))
-        self.NICKSERV_IDENTIFY = bool(cfg.get('SERVER', 'enable_nickserv_identify'))
+        self.NICKSERV_IDENTIFY = bool(cfg.get('NICK', 'enable_nickserv_identify'))
         
-        #self.ZEO_ADDRESS = cfg.get('ZEO', 'host')
-        #self.ZEO_PORT = cfg.get('ZEO', 'port')
+        self.ZEO_DB = cfg.get('ZEO', 'db')
+        self.ZEO_HOST = cfg.get('ZEO', 'host')
+        self.ZEO_PORT = cfg.get('ZEO', 'port')
         
         
         return
