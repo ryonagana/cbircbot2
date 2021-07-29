@@ -21,7 +21,8 @@ ssl_enable = False
 def main():
     cfg = cbircbot2.core.config.Config()
     global ssl_enable
-    
+
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:v", ['ssl'])
     except getopt.GetoptError as ge:
@@ -33,10 +34,13 @@ def main():
             cfg.set('SERVER', 'enable_ssl', ssl_enable)
     
     params = EnvironmentParams()
+    params.load_from_config(cfg)
+    ssl_enable = params.SSL_ENABLED
     cfg.print_cfg()
+    
     print(params.SSL_ENABLED)
     params.load_from_config(cfg)
-    sock = Socket(params.HOSTNAME, params.PORT, False)  # force false while im fixing
+    sock = Socket(params.HOSTNAME, params.PORT, ssl_enable)  # force false while im fixing
     irc = IrcClient(sock, params)
     modules = IrcModules(modules=params.MODULES, client=irc)
     # text = InputText(irc)

@@ -5,6 +5,7 @@ enable_ssl = False
 
 [CHANNEL]
 channel = #defaultchan
+channel_passwd=
 
 [NICK]
 identd = Its a Me
@@ -15,3 +16,7 @@ enable_nickserv_identify = False
 [MODULE_OPTS]
 openweather_api = 
 
+[ZEO]
+db = d
+host = localhost
+port = 9100

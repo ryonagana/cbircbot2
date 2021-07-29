@@ -61,6 +61,9 @@ class Config:
         val = self.config.get(group, key)
         return val
     
+    def get_bool(self, section: str, key: str) -> bool:
+        return self.config.getboolean(section, key)
+    
     def check_config_exists(self):
         found = False
         try:
