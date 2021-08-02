@@ -57,8 +57,6 @@ def update(zodb, version_key = 'version', init_callback = None, update = None):
 
     keys = list(update.keys())
     sorted(keys)
-    print(keys)
-
     last_key = keys[-1] + 1
 
     for value_from in range (version, last_key):
