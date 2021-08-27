@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Web CBIrcBOT interface{% end %}</title>
+
+    <link rel="stylesheet" href="{{ static_url('flakes/css/all.css') }}">
+
+    {% block css_extra %}{% end %}
+
+</head>
+<body>
+{% block content %}{% end %}
+{% block js_extra %}{% end %}
+
+<script src="{{ static_url('flakes/bower_components/jquery/dist/jquery.min.js') }}"></script>
+<script src="{{ static_url('flakes/js/base.js') }}"></script>
+<script src="{{ static_url('flakes/bower_components/gridforms/gridforms/gridforms.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+[submodule "cbircbot2/modules/Web/static/flakes"]
+	path = cbircbot2/modules/Web/static/flakes
+	url = git@github.com:kumailht/flakes.git

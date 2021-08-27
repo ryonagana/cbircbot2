@@ -20,3 +20,7 @@ openweather_api =
 db = d
 host = localhost
 port = 9100
+
+[Web]
+;ip used to acess the web panel, exposing to the internet can be a security risk
+access_address=localhost
