@@ -26,7 +26,7 @@ class IrcClient:
         self.auth_user = AuthClient(self)
         self.modules_process = None
         self.modules_queue = queue.Queue()
-
+        self.is_thread_alive = False
     def get_socket(self):
         return self.sock.get_sock()
 
@@ -79,30 +79,31 @@ class IrcClient:
             print(msg)
 
     def detect_motd(self, msg):
-
+        """detect if motd is found, end of the motd to start auto join and modules thread"""
         data = IrcClient.convert_utf8(msg)
 
         if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1 and not self.end_motd_detect:
             self.end_motd_detect = True
 
             try:
-                self.modules_process = threading.Thread(target=self.process_modules_worker, args=(self,), daemon=True)  #mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
-                self.modules_process.start()
-
+                self.thread_init_modules()
             except Exception as e:
-
-
+                self.modules_process.join()
+                
+                if not self.modules_process.is_alive():
+                    self.thread_init_modules()
                 print(COLOR_RED +  "main daemon failed!" + COLOR_RESET)
-                print(COLOR_RED + "exception: {0}".format(str(e)) + COLOR_RESET)
-                print()
-                logging.critical("main daemon failed close")
-                self.sock.exit_gracefully()
+                print(COLOR_RED + "exception: {e}" + COLOR_RESET)
             return True
 
         return False
 
     def output_data(self, msg):
         print(IrcClient.convert_utf8(msg))
+        
+    def thread_init_modules(self):
+        self.modules_process = threading.Thread(target=self.process_modules_worker, args=(self,), daemon=False)  #mp.Process(target=self.process_modules_worker, args=(self.modules_queue, self,))
+        self.modules_process.start()
 
     def bot_loop(self, data):
 

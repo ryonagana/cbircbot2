@@ -40,8 +40,11 @@ class Weather(IrcModuleInterface):
         irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
-
-        if "OPEN_WEATHER_API" not in os.environ:
+            
+        api: str = irc.params.OPENWEATHER_API
+        print(irc.params.OPENWEATHER_API)
+        
+        if irc.params.OPENWEATHER_API == "":
             irc.msg_to_channel(irc.params.CHANNEL, "My API KEY was not set, Sorry. no weather for you")
             return
 
@@ -58,7 +61,7 @@ class Weather(IrcModuleInterface):
             irc.msg_to_channel(irc.params.CHANNEL, "Please Type City name")
             return
 
-        api  = os.environ['OPEN_WEATHER_API']
+ 
         http = 'http://'
         if irc.params.SSL_ENABLED:
             http = 'https://'
