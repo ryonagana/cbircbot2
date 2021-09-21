@@ -78,4 +78,4 @@ class Config:
         
         for section in self.config.sections():
             for keys in self.config[section]:
-                print("Section:{0} -> {1} : {2}".format(section, keys, self.config[section][keys]))
+                print(f"Section:{section} -> {keys} : {self.config[section][keys]}")
