@@ -81,7 +81,7 @@ class EnvironmentParams:
         try:
             return os.environ[key]
         except KeyError as key:
-            print("Environ variable {0} doesnt exists!".format(key))
+            print(f"Environ variable {key} doesnt exists!")
             return False
     
     def load_from_config(self, cfg):

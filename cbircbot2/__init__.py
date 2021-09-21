@@ -22,7 +22,6 @@ def main():
     cfg = cbircbot2.core.config.Config()
     global ssl_enable
 
-
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:v", ['ssl'])
     except getopt.GetoptError as ge:
@@ -49,7 +48,7 @@ def main():
     sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
     
     if not sock.connect():
-        print("Error Trying to connect on {server}:{port}".format(server=params.HOSTNAME, port=params.PORT))
+        print(f"Error Trying to connect on {params.HOSTNAME}:{params.PORT}")
         sys.exit(0)
     
     irc.auth(modules=modules)
@@ -76,10 +75,10 @@ def main():
     
     except KeyboardInterrupt as ex:
         msg = traceback.print_exc()
-        logging.critical(msg)
-    
+        logging.critical(f"{msg} - {ex}")
     finally:
         modules.end_all_modules()
-        sock.exit_gracefully()
-    
+        
     irc.modules_process.join()
+    irc.modules_process.stop()
+    sock.exit_gracefully()
