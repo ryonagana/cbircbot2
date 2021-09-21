@@ -1,7 +1,9 @@
 import configparser
 import traceback
+from dataclasses import  dataclass
 
 
+@dataclass
 class Config:
     DEFAULT_CONF = {
            'SERVER': {

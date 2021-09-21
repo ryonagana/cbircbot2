@@ -1,4 +1,4 @@
-from cbircbot2.core.module_base import IrcModuleInterface
+from cbircbot2.core.module_base import IrcModuleInterface, IrcCommandType
 
 class helloworld(IrcModuleInterface):
 
@@ -14,7 +14,7 @@ class helloworld(IrcModuleInterface):
 
     def start(self, client):
         print("hello world 1")
-        self.register_cmd("hello", self.hello_callback, self.CMD_PUBLIC, "Just a Test!")
+        self.register_cmd("hello", self.hello_callback, IrcCommandType.CMD_PUBLIC, "Just a Test!")
 
     def end(self):
         pass

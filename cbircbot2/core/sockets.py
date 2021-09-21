@@ -36,10 +36,10 @@ class Socket:
 
     def connect(self):
         try:
-            #self.socket_handler.connect((self.host, int(self.port)))
-            #self.socket_handler.setblocking(False)
-            #self.socket_handler.settimeout(10)
-            #self.socket_connected = True
+            self.socket_handler.connect((self.host, int(self.port)))
+            self.socket_handler.setblocking(False)
+            self.socket_handler.settimeout(10)
+            self.socket_connected = True
             pass
         except Exception as error:
             print(str(error))

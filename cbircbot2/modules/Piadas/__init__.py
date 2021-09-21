@@ -1,4 +1,4 @@
-from cbircbot2.core.module_base import IrcModuleInterface
+from cbircbot2.core.module_base import IrcModuleInterface, IrcCommandType
 from cbircbot2.modules.Users.db.db import UserDB
 from cbircbot2.modules.Users.db.models.PiadaModel import PiadaModel
 import random
@@ -32,13 +32,13 @@ class Piadas(IrcModuleInterface):
 
     def start(self, client):
         self.irc = client
-        self.register_cmd("mostrar", self._mostrar_piada, self.CMD_PUBLIC)
-        self.register_cmd("cadastrar", self._cadastrar_piada, self.CMD_PUBLIC)
+        self.register_cmd("mostrar", self._mostrar_piada, IrcCommandType.CMD_PUBLIC)
+        self.register_cmd("cadastrar", self._cadastrar_piada,  IrcCommandType.CMD_PUBLIC)
 
-        self.register_cmd("listar", self._listar_piadas, self.CMD_PRIVATE)
+        self.register_cmd("listar", self._listar_piadas,  IrcCommandType.CMD_PRIVATE)
 
-        self.register_cmd("del", self._del_piadas, self.CMD_PRIVATE)
-        self.register_cmd("edit", self._edit_piadas, self.CMD_PRIVATE)
+        self.register_cmd("del", self._del_piadas,  IrcCommandType.CMD_PRIVATE)
+        self.register_cmd("edit", self._edit_piadas,  IrcCommandType.CMD_PRIVATE)
 
 
     def _del_piadas(self, *args, **kwargs):

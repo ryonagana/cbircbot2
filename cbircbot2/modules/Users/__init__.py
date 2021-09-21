@@ -1,4 +1,4 @@
-from cbircbot2.core.module_base import IrcModuleInterface
+from cbircbot2.core.module_base import IrcModuleInterface,  IrcCommandType
 from cbircbot2.modules.Users.db.db import UserDB
 
 from cbircbot2.modules.Users.db.models.AdminModel import UserModel, AdminModel
@@ -22,10 +22,10 @@ class Users(IrcModuleInterface):
         self.db_addr = self.irc.params.ZEO_ADDRESS
         self.db_port = self.irc.params.ZEO_PORT
         
-        self.register_cmd('karma++', self.user_add_karma, self.CMD_PUBLIC, "Add Karma to User")
-        self.register_cmd('add', self.add_new_user, self.CMD_PUBLIC, "Add a New User")
-        self.register_cmd('karma--', self.user_remove_karma, self.CMD_PUBLIC, "Add a New User")
-        self.register_cmd('karma', self.show_karma, self.CMD_PUBLIC, "Shows Karma Number")
+        self.register_cmd('karma++', self.user_add_karma,  IrcCommandType.CMD_PUBLIC, "Add Karma to User")
+        self.register_cmd('add', self.add_new_user,  IrcCommandType.CMD_PUBLIC, "Add a New User")
+        self.register_cmd('karma--', self.user_remove_karma,  IrcCommandType.CMD_PUBLIC, "Add a New User")
+        self.register_cmd('karma', self.show_karma,  IrcCommandType.CMD_PUBLIC, "Shows Karma Number")
     
     def end(self, *args, **kwargs):
         super().end(*args, **kwargs)

@@ -1,5 +1,15 @@
 from cbircbot2.core.command import Command
 import re
+from enum import Enum, auto
+
+
+class IrcCommandType(Enum):
+    """Command types"""
+    CMD_NONE = auto()
+    CMD_PUBLIC = auto()
+    CMD_PRIVATE = auto()
+    CMD_BOTH =  auto()
+
 
 class IrcModuleInterface(object):
     ID = 0  # must be unique default bot ID 0-1000  please use 1000+
@@ -76,7 +86,7 @@ class IrcModuleInterface(object):
         return {'cmd': msg, 'params_count': len(msg)}
 
     def cmd_help_generator(self):
-        self.register_cmd("!help", self.help_func, self.CMD_PRIVATE, "Default help for {0}".format(self.MODULE_NAME))
+        self.register_cmd("!help", self.help_func,  IrcCommandType.CMD_PRIVATE, "Default help for {0}".format(self.MODULE_NAME))
 
 
     @staticmethod
@@ -85,7 +95,7 @@ class IrcModuleInterface(object):
         return string
 
     @classmethod
-    def register_cmd(cls, command, callback, access=0, description=""):
+    def register_cmd(cls, command: str, callback: object, access: IrcCommandType = IrcCommandType.CMD_PRIVATE, description: str = ""):
 
         if command and callback:
             prefix = '?'  # command[0]

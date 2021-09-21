@@ -1,6 +1,8 @@
 from cbircbot2.core.module_base import IrcModuleInterface
 import requests
 import re
+
+
 class titles(IrcModuleInterface):
     
     ID=1002

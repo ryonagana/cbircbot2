@@ -92,8 +92,8 @@ class IrcClient:
                 
                 if not self.modules_process.is_alive():
                     self.thread_init_modules()
-                print(COLOR_RED +  "main daemon failed!" + COLOR_RESET)
-                print(COLOR_RED + "exception: {e}" + COLOR_RESET)
+                print(COLOR_RED + f"main daemon failed!" + COLOR_RESET)
+                print(COLOR_RED + f"exception: {e}" + COLOR_RESET)
             return True
 
         return False

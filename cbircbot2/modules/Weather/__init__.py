@@ -1,4 +1,4 @@
-from cbircbot2.core.module_base import IrcModuleInterface
+from cbircbot2.core.module_base import IrcModuleInterface,  IrcCommandType
 import urllib
 import json
 from urllib.request import urlopen
@@ -28,7 +28,7 @@ class Weather(IrcModuleInterface):
 
 
     def start(self, client):
-        self.register_cmd("get", self.consume_weather_api, self.CMD_PUBLIC, "Just a Test!")
+        self.register_cmd("get", self.consume_weather_api,  IrcCommandType.CMD_PUBLIC, "Just a Test!")
         self.irc = client
 
     def end(self):
