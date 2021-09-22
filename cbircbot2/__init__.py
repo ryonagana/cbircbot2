@@ -77,9 +77,12 @@ def main():
     except KeyboardInterrupt as ex:
         msg = traceback.print_exc()
         logging.critical(msg)
+        closed = True
     
     finally:
         modules.end_all_modules()
+        irc.modules_process.join()
         sock.exit_gracefully()
+
     
-    irc.modules_process.join()
+

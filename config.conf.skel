@@ -5,7 +5,7 @@ enable_ssl = False
 
 [CHANNEL]
 channel = #defaultchan
-channel_passwd=
+passwd= ""
 
 [NICK]
 identd = Its a Me
@@ -14,7 +14,7 @@ password =
 enable_nickserv_identify = False
 
 [MODULE_OPTS]
-openweather_api = 
+openweather_api = ""
 
 [ZEO]
 db = d

@@ -58,7 +58,7 @@ class Config:
     
     def get(self, group: str, key: str) -> str:
         if not self.config.get(group, key):
-            raise Exception("Config Section: {0} and {1} key not found!".format(group,key))
+            raise Exception(f"Config Section: {group} and {key} key not found!")
         
         val = self.config.get(group, key)
         return val
