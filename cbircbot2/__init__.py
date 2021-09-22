@@ -21,12 +21,15 @@ ssl_enable = False
 def main():
     cfg = cbircbot2.core.config.Config()
     global ssl_enable
-
+    
+    if not cfg.check_config_exists():
+        raise FileNotFoundError("Config Not Found, please copy config.conf.skel to config.cfg")
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:v", ['ssl'])
     except getopt.GetoptError as ge:
-        sys.exit(2)
+        print(f"invalid options provided -  {ge}")
+        sys.exit(-1)
     
     for opt, a, in opts:
         if opt in ('-s', '--ssl'):
@@ -54,7 +57,7 @@ def main():
     
     irc.auth(modules=modules)
     
-    closed = False
+    closed: bool = False
     
     try:
         
@@ -75,9 +78,8 @@ def main():
                     closed = True
     
     except KeyboardInterrupt as ex:
-        msg = traceback.print_exc()
-        logging.critical(msg)
         closed = True
+        print(f"Exception: {ex}")
     
     finally:
         modules.end_all_modules()
