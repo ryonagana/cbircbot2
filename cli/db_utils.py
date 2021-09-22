@@ -412,23 +412,7 @@ import threading
 break_input = False
 if __name__ == "__main__":
 
-    try:
-        keypress_thread = threading.Thread(target=th_waitkeypress,args=[break_input],)
-        keypress_thread.start()
-    except Exception as e:
-        print(e)
-        print(traceback.print_exc())
-    print("{th} started".format(th=keypress_thread.name))
-    
-    try:
-        if not sys.argv[1]:
-            help()
-            sys.exit(0)
-    except IndexError as error:
-        help()
-        keypress_thread.join()
-        sys.exit(0)
-        
+
     try:
         for args in sys.argv:
             if args.startswith('--zeo'):
@@ -447,5 +431,4 @@ if __name__ == "__main__":
     print("Compression: {comp}".format(comp=use_compression))
     print("Database Version: {db} ".format(db=get_database_version()))
     main()
-    keypress_thread.join()
     pass
