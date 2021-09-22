@@ -9,20 +9,11 @@ class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
     module_instances_list = {}
-    #ROOT_PATH = path = os.path.dirname(sys.modules['__main__'].__file__)
-    #ROOT_PATH = os.path.dirname(os.path.abspath(os.getcwd()))
-    #MODULES_PATH = os.path.join(ROOT_PATH, 'cbircbot2/modules')
-
 
     def __init__(self, modules, *args, **kwargs):
-
         self.irc_client = None
-
         if "client" in kwargs:
             self.irc_client = kwargs['client']
-
-        #self.module_folder_list = [folder for folder in next(os.walk(self.MODULES_PATH))][1]
-
         with open("modules.txt", "r") as fp:
             lines = fp.read()
             self.module_folder_list = [l for l in lines.split("\n")]

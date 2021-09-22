@@ -3,6 +3,7 @@ import logging
 import os
 import pathlib
 import selectors
+import socket
 import sys
 import traceback
 
@@ -15,76 +16,84 @@ from cbircbot2.core.sockets import Socket
 
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
-ssl_enable = False
 
-
-def main():
-    cfg = cbircbot2.core.config.Config()
-    global ssl_enable
-    
-    if not cfg.check_config_exists():
-        raise FileNotFoundError("Config Not Found, please copy config.conf.skel to config.cfg")
-
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "s:v", ['ssl'])
-    except getopt.GetoptError as ge:
-        print(f"invalid options provided -  {ge}")
-        sys.exit(-1)
-    
-    for opt, a, in opts:
-        if opt in ('-s', '--ssl'):
-            ssl_enable = True
-            cfg.set('SERVER', 'enable_ssl', ssl_enable)
-    
-    params = EnvironmentParams()
-    params.load_from_config(cfg)
-    ssl_enable = params.SSL_ENABLED
-    cfg.print_cfg()
-    
-    print(params.SSL_ENABLED)
-    params.load_from_config(cfg)
-    sock = Socket(params.HOSTNAME, params.PORT, ssl_enable)  # force false while im fixing
-    irc = IrcClient(sock, params)
-    modules = IrcModules(modules=params.MODULES, client=irc)
-    # text = InputText(irc)
-    # print(text)
-    sel = selectors.DefaultSelector()
-    sel.register(sock.socket_handler, selectors.EVENT_READ, sock.recv)
-    
-    if not sock.connect():
-        print("Error Trying to connect on {server}:{port}".format(server=params.HOSTNAME, port=params.PORT))
-        sys.exit(0)
-    
-    irc.auth(modules=modules)
-    
+class Bot(object):
+    ssl_enable: bool = False
+    cfg: cbircbot2.core.config.Config = None
     closed: bool = False
     
-    try:
-        
-        data = None
-        
-        while not closed:
-            
-            event = sel.select(0.1)
-            
-            if event:
-                for key, mask in event:
-                    callback = key.data
-                    data = callback(key.fileobj)
-                if data:
-                    irc.bot_loop(data)
-                    irc.parse(data)
-                else:
-                    closed = True
-    
-    except KeyboardInterrupt as ex:
-        closed = True
-        print(f"Exception: {ex}")
-    
-    finally:
-        modules.end_all_modules()
-        irc.modules_process.join()
-        sock.exit_gracefully()
+    irc: IrcClient = None
+    params = None
+    sock: Socket = None
+    modules: IrcModules = None
+    selectors = None
 
+    def __init__(self):
+        self.cfg = cbircbot2.core.config.Config()
+        
+        if not self.cfg.check_config_exists():
+            raise FileNotFoundError("Config Not Found, please copy config.conf.skel to config.cfg")
+        
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "s:v",["ssl"])
+        except getopt.GetoptError as ge:
+            print(f"invalid options provided -  {ge}")
+            sys.exit(-1)
+
+        for opt, a, in opts:
+            if opt in ('-s', '--ssl'):
+                self. ssl_enable = True
+                self.cfg.set('SERVER', 'enable_ssl', self.ssl_enable)
+        
+        
+        
+        print(f"SSL: {self.ssl_enable}")
+        
+        # load parameters from environment vars or config.cfg
+        try:
+            self.params = EnvironmentParams()
+            self.params.load_from_config(self.cfg)
+            self.ssl_enable = self.params.SSL_ENABLED
+            
+            # print all CFG
+            self.cfg.print_cfg()
+           
+            self.sock = Socket(self.params.HOSTNAME, self.params.PORT, self.ssl_enable)  # force false while im fixing
+            self.irc = IrcClient(self.sock, self.params)
+            self.modules = IrcModules(modules=self.params.MODULES, client=self.irc)
+           
+            if not self.sock.connect():
+                raise socket.error(f"Socket cannot connect to {self.params.HOSTNAME}:{self.params.PORT}")
+            
+            self.selectors =  selectors.DefaultSelector()
+            self.selectors.register(self.sock.socket_handler, selectors.EVENT_READ, self.sock.recv)
+            self.irc.auth(module=self.modules)
+           
+        except Exception as ex:
+            print(f"Exception occurred {ex}")
+    
+    def loop(self) -> None:
+        data = None
+        try:
+            while not self.closed:
+                event = self.selectors.select()
+                
+                if event:
+                    for key, mask in event:
+                        callback = key.data
+                        data = callback(key.fileobj)
+                    if data:
+                        self.irc.bot_loop(data)
+                        self.irc.parse(data)
+        except KeyboardInterrupt as e:
+            print(f"Exception Raised: {e}")
+            self.irc.modules_process.join()
+            self.modules.end_all_modules()
+            self.sock.exit_gracefully()
+            sys.exit(-1)
+def main():
+    bot = Bot()
+    bot.loop()
+    pass
     
 

@@ -5,7 +5,7 @@ import ssl
 import sys
 
 
-class Socket:
+class Socket(object):
     def __init__(self, host, port, has_ssl=False):
         self.host = host
         self.port = port
@@ -65,3 +65,13 @@ class Socket:
         time.sleep(1)
         self.close()
         sys.exit(0)
+        
+    def __repr__(self):
+        print("== SOCKET == ")
+        print(f"host: {self.host}")
+        print(f"port: {self.port}")
+        print(f"Socket: {self.sock}")
+        print(f"Certificate: {self.cert_file}")
+        
+    def __str__(self):
+        return f"host: {self.host}\nport: {self.port}\nSocket: {self.sock}\nCertificate: {self.cert_file}"
