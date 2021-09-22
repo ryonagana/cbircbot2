@@ -1,7 +1,7 @@
 from cbircbot2.core.module_base import IrcModuleInterface
 import requests
 import re
-
+import html
 
 class titles(IrcModuleInterface):
     
@@ -52,11 +52,10 @@ class titles(IrcModuleInterface):
             self.irc.msg_to_channel(self.irc.params.CHANNEL, "{link} Invalid Response: {code}".format(code=req.status_code,link=link))
             return
             
-        
-        html = req.text
+        html_element = req.text
     
-        title = html[html.find('<title>') + 7 : html.find('</title>')]       
-        self.irc.msg_to_channel(self.irc.params.CHANNEL, "{title_str}".format(title_str=title))
+        title = html_element[ html_element.find('<title>') + 7 : html_element.find('</title>')]
+        self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{html.unescape(title)}")
         return
         
         
