@@ -8,9 +8,11 @@ and the sucessor of [cbircbot](https://github.com/ryonagana/cbircbot)
 - ZEO Server (fix concurrency problems)
 - IPython (ease debugging)
 - urllib3 for Weather
-- Python Version 3.7+ (can run on 3.6 but not recommended)
+- Python Version 3.7+
 
-###Setup virtualenv
+can run on python 3.6 but not recommended because some features are missing
+
+### Setup virtualenv
 ```console
 foo@bar:~$ virtualenv --python=python3 venv
 foo@bar:~$ source venv/bin/activate
