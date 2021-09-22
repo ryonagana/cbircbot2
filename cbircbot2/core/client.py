@@ -145,7 +145,7 @@ class IrcClient:
 
             if msg.find('PRIVMSG') != -1:
                 is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
-
+                
                 if is_message:
 
                     data = {
@@ -155,7 +155,7 @@ class IrcClient:
                         'receiver': is_message.groups()[2],  # channel or receiver's nickname
                         'message': is_message.groups()[3],  # message
                     }
-
+                    print(f"message: {data}")
                     irc.modules.broadcast_message_all_modules(**data)
 
                     if not data['message'].strip("").startswith("?"):
@@ -165,11 +165,16 @@ class IrcClient:
 
 
                     msg = data['message'].strip("").split(" ")
-
-                    prefix = msg[0]
-                    module = msg[1]
-                    command = msg[2]
-                    params = data['message'].split(" ")[3:]
+                    print(f"Message: {msg}")
+                    
+                    try:
+                        prefix = msg[0]
+                        module = msg[1]
+                        command = msg[2]
+                        params = data['message'].split(" ")[3:]
+                    except IndexError as ierror:
+                        print(f"module not mentioned command {ierror}")
+                        continue
 
                     module_instance = None
 
@@ -183,8 +188,8 @@ class IrcClient:
                             try:
                                 module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
                             except Exception as e:
-                                print("Command: {0} not Found".format(command))
-                                print("Exception: {ex}".format(ex=str(e)))
+                                print(f"Command: {command} not Found")
+                                print(f"Exception: {e}")
                                 print(traceback.print_exc())
                                 continue
 
@@ -194,11 +199,11 @@ class IrcClient:
 
                     except Exception as e:
                         print("Module Not Found!")
-                        print(BG_RED + COLOR_BLACK + "Exception: {ex}".format(ex=str(e)) + BG_RESET + COLOR_RESET )
+                        print(BG_RED + COLOR_BLACK + f"Exception: {e}" + BG_RESET + COLOR_RESET )
                         continue
 
             self.modules_queue.task_done()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
     ## END MULTIPROCESSING CALLBACK ALERT

@@ -10,43 +10,42 @@ class IrcCommandType(Enum):
     CMD_PRIVATE = auto()
     CMD_BOTH =  auto()
 
+class IrcModuletype(Enum):
+    """type of modules"""
+    MODULE_PUBLIC = auto()
+    MODULE_INTERNAL = auto()
+    MODULE_THREAD = auto()
 
 class IrcModuleInterface(object):
-    ID = 0  # must be unique default bot ID 0-1000  please use 1000+
-    AUTHOR = "Author Foo"
-    PERMISSION = 0
-    MODULE_NAME = "ModuleFoo"
-    DESCRIPTION = None
-    MODULE_TYPE = 0
-
-    CMD_NONE = 0
-    CMD_PUBLIC = 1
-    CMD_PRIVATE = 2
-    CMD_BOTH = 3
+    ID: int = 0  # must be unique default bot ID 0-1000  please use 1000+
+    AUTHOR: str = "Author Foo"
+    PERMISSION: int = 0
+    MODULE_NAME: str = "ModuleFoo"
+    DESCRIPTION: str = None
+    MODULE_TYPE = IrcModuletype.MODULE_PUBLIC
     registered_commands = {}
     irc = None
-
     message = ""
 
-    def __init__(self):
-
-        pass
-
-    def find_command(self, command):
-
+    def command_exists(self, command):
         for k,_ in self.registered_commands.items():
             if command.find(k) != -1:
                 return True
-
         return False
-
-
-    def  get_args(self, *args, **kwargs):
+    
+    @staticmethod
+    def get_args(*args, **kwargs):
+        irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
 
         message = kwargs['data']['message']
         receiver = kwargs['data']['receiver']
+        sender = kwargs['data']['sender']
+        params = message.split(" ", 3)
+        count = len(params) - 3
+
+        return irc, message,sender, receiver,params, count
 
 
 

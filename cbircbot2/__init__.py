@@ -67,7 +67,7 @@ class Bot(object):
             
             self.selectors =  selectors.DefaultSelector()
             self.selectors.register(self.sock.socket_handler, selectors.EVENT_READ, self.sock.recv)
-            self.irc.auth(module=self.modules)
+            self.irc.auth(modules=self.modules)
            
         except Exception as ex:
             print(f"Exception occurred {ex}")

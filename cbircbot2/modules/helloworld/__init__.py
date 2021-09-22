@@ -20,9 +20,8 @@ class helloworld(IrcModuleInterface):
         pass
 
     def hello_callback(self,*args, **kwargs):
-        irc = None
-        if "client" in kwargs:
-            irc = kwargs["client"]
-
-        print(dir(irc))
-        irc.msg_to_channel(irc.params.CHANNEL, "Hello World!")
+        
+        irc, msg, sender,receiver = IrcModuleInterface.get_args(**kwargs)
+        print(f"params: {kwargs}")
+        irc.msg_to_channel(receiver, "Hello World!")
+        pass

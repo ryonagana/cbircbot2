@@ -31,9 +31,6 @@ class IrcModules(object):
 
     def get_module_instance(self, name):
         try:
-
-
-
             if name.lower() in self.module_instances_list:
                 return self.module_instances_list[name.lower()]
             else:
@@ -79,4 +76,5 @@ class IrcModules(object):
     def broadcast_message_all_modules(self, *args, **kwargs):
 
         for m in self.module_instances_list.values():
-            m.on_message(**kwargs)
+            if hasattr(m, "on_message"):
+                m.on_message(**kwargs)
