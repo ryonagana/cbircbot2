@@ -9,6 +9,7 @@ from cbircbot2.core.modules import IrcModules
 import logging
 import threading
 import queue
+from contextlib import suppress
 
 logging.basicConfig(filename="log.txt")
 
@@ -163,41 +164,20 @@ class IrcClient:
 
                     msg = data['message'].strip("").split(" ")
                     
-                    try:
+                    with suppress(IndexError):
                         prefix = msg[0]
                         module = msg[1]
                         command = msg[2]
                         params = data['message'].split(" ")[3:]
-                    except IndexError as ierror:
-                        print(f"module not mentioned command {ierror}")
-                        continue
-
-                    module_instance = None
-
-                    try:
+ 
+                    with suppress(Exception):
                         module_instance = irc.modules.get_module_instance(module)
                         if not module_instance:
                             continue
 
                         if command in module_instance.registered_commands:
-
-                            try:
-                                module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
-                            except Exception as e:
-                                print(f"Command: {command} not Found")
-                                print(f"Exception: {e}")
-                                print(traceback.print_exc())
-                                continue
-
-                        else:
-                            print("Command: {0} not Found".format(command))
-                            continue
-
-                    except Exception as e:
-                        print("Module Not Found!")
-                        print(BG_RED + COLOR_BLACK + f"Exception: {e}" + BG_RESET + COLOR_RESET )
-                        continue
-
+                            module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
+                            
             self.modules_queue.task_done()
             time.sleep(0.1)
 
