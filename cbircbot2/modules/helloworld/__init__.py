@@ -20,8 +20,6 @@ class helloworld(IrcModuleInterface):
         pass
 
     def hello_callback(self,*args, **kwargs):
-        
-        irc, msg, sender,receiver = IrcModuleInterface.get_args(**kwargs)
-        print(f"params: {kwargs}")
+        irc, message, sender, receiver, params, count = IrcModuleInterface.get_args(**kwargs)
         irc.msg_to_channel(receiver, "Hello World!")
         pass

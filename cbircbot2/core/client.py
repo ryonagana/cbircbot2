@@ -155,17 +155,13 @@ class IrcClient:
                         'receiver': is_message.groups()[2],  # channel or receiver's nickname
                         'message': is_message.groups()[3],  # message
                     }
-                    print(f"message: {data}")
+
                     irc.modules.broadcast_message_all_modules(**data)
 
                     if not data['message'].strip("").startswith("?"):
-                        #self.privmsg_event(data['message'])
                         continue
 
-
-
                     msg = data['message'].strip("").split(" ")
-                    print(f"Message: {msg}")
                     
                     try:
                         prefix = msg[0]

@@ -5,12 +5,15 @@ from importlib.abc import Loader
 from cbircbot2.core.colors import *
 from cbircbot2.modules.Users import Users
 import traceback
+from contextlib import suppress
+
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
     module_instances_list = {}
 
     def __init__(self, modules, *args, **kwargs):
+        """init module list, prepare the file to load instances"""
         self.irc_client = None
         if "client" in kwargs:
             self.irc_client = kwargs['client']
@@ -30,15 +33,14 @@ class IrcModules(object):
                 self.module_instances_list[mod.lower()].start(self.irc_client)
 
     def get_module_instance(self, name):
-        try:
+        """ get the module instance
+            need to suppress  exception
+            avoid thread break
+            just ignore it
+        """
+        with suppress(IndexError):
             if name.lower() in self.module_instances_list:
                 return self.module_instances_list[name.lower()]
-            else:
-                raise Exception("Module {mod_name} Not Found".format(mod_name=name))
-        except Exception as e:
-            traceback.print_exc()
-
-        return None
 
     def create_instance(self, module_name):
 

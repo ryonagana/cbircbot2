@@ -44,8 +44,8 @@ class IrcModuleInterface(object):
         sender = kwargs['data']['sender']
         params = message.split(" ", 3)
         count = len(params) - 3
-
-        return irc, message,sender, receiver,params, count
+        t = (irc, message, sender, receiver,params, count)
+        return t
 
 
 
