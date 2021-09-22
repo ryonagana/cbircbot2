@@ -23,7 +23,7 @@ foo@bar:~$ source venv/bin/activate
 ```
 ## If dependencies go wrong
 ```console
-(venv)foo@bar:~$ pip install zeo zodb urllib3 ipython tornado  
+(venv)foo@bar:~$ pip install zeo zodb urllib3 ipython tornado requests  
 ```
 
 ### After Setup:
