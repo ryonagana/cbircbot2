@@ -305,8 +305,6 @@ class Users(IrcModuleInterface):
                 else:
                     self.irc.msg_to_channel(self.irc.params.CHANNEL, "{s} Access Denied".format(s=sender))
                     return
-                
-                self.__karma_message(nick)
                 return
             
             self.__add_karma(nick)
