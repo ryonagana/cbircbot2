@@ -8,22 +8,20 @@ and the sucessor of [cbircbot](https://github.com/ryonagana/cbircbot)
 - ZEO Server (fix concurrency problems)
 - IPython (ease debugging)
 - urllib3 for Weather
+- Python Version 3.7+ (can run on 3.6 but not recommended)
 
-
-
-### Setup 
+###Setup virtualenv
 ```console
-foo@bar:~$ virtualenv ~/youresiredvirtualenvdir/cbircbot
+foo@bar:~$ virtualenv --python=python3 venv
+foo@bar:~$ source venv/bin/activate
 ```
+### Install Dependencies
 ```console
-foo@bar:~$ source ~/youresiredvirtualenvdir/cbircbot/bin/activate
+(venv)foo@bar:~$ pip install -r requirements.txt 
 ```
+## If dependencies go wrong
 ```console
-foo@bar:~$  git clone https://github.com/ryonagana/cbircbot2.git
-cd cbircbot2
-```
-```console
-foo@bar:~$ pip3 install -r requirements.txt
+(venv)foo@bar:~$ pip install zeo zodb urllib3 ipython tornado  
 ```
 
 ### After Setup:
