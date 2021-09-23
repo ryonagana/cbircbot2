@@ -35,6 +35,9 @@ class IrcModuleInterface(object):
     
     @staticmethod
     def get_args(*args, **kwargs):
+        """get the args from a message
+           following order: irc, message, sender, receiver, params, count
+        """
         irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
@@ -44,8 +47,8 @@ class IrcModuleInterface(object):
         sender = kwargs['data']['sender']
         params = message.split(" ", 3)
         count = len(params) - 3
-        t = (irc, message, sender, receiver,params, count)
-        return t
+
+        return irc, message, sender, receiver,params, count
 
 
 
