@@ -80,7 +80,11 @@ class Weather(IrcModuleInterface):
                 req = s.get(url, params=url_data, verify=ssl.get_default_verify_paths().cafile)
             else:
                 req = s.get(url, params=url_data)
-
+                
+        if req.status_code != 200:
+            irc.msg_to_channel(irc.params.CHANNEL, f"{city} is invalid for Open Weather API")
+            return
+        
         data = json.loads(req.text)
         print(data)
 
@@ -107,6 +111,7 @@ class Weather(IrcModuleInterface):
         
         if  kwargs['message'].startswith('? weather') and "get" not in kwargs['message']:
             city =  kwargs['message'].split(" ", 2)[2]
+            kwargs['message'] = f"? weather get {city}"
             self.consume_weather_api(irc, kwargs['message'], irc.params.OPENWEATHER_API)
             return
         return
