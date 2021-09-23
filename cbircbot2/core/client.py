@@ -150,7 +150,7 @@ class IrcClient:
                 if is_message:
 
                     data = {
-
+                        'client': irc,
                         'sender': is_message.groups()[0],  # sender's nickname
                         'ident': is_message.groups()[1],  # ident
                         'receiver': is_message.groups()[2],  # channel or receiver's nickname

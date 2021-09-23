@@ -1,17 +1,14 @@
 from cbircbot2.core.module_base import IrcModuleInterface,  IrcCommandType
+from cbircbot2.core.client import IrcClient
 import urllib
 import json
 from urllib.request import urlopen
 from urllib.parse import urlencode
 import os
 import requests
-import requests.packages.urllib3.util.ssl_
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'
 import ssl
 import certifi
 
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 
 class Weather(IrcModuleInterface):
@@ -28,31 +25,34 @@ class Weather(IrcModuleInterface):
 
 
     def start(self, client):
-        self.register_cmd("get", self.consume_weather_api,  IrcCommandType.CMD_PUBLIC, "Just a Test!")
+        self.register_cmd("get", self._run_get_weather,  IrcCommandType.CMD_PUBLIC, "Just a Test!")
         self.irc = client
 
     def end(self):
         pass
 
-
-
-    def consume_weather_api(self, *args, **kwargs):
+    
+    def _run_get_weather(self, *args, **kwargs):
         irc = None
         if "client" in kwargs:
             irc = kwargs["client"]
-            
+
         api: str = irc.params.OPENWEATHER_API
         print(irc.params.OPENWEATHER_API)
-        
+
         if irc.params.OPENWEATHER_API == "":
             irc.msg_to_channel(irc.params.CHANNEL, "My API KEY was not set, Sorry. no weather for you")
             return
-
+        
         if "data" not in kwargs:
             print("command Failed in Module: {0}".format(self.MODULE_NAME))
             return
 
-        args = kwargs['data']['message']
+        self.consume_weather_api(irc, kwargs['data']['message'], api)
+
+    def consume_weather_api(self, irc: IrcClient, message: str, api: str) -> None:
+
+        args = message
 
         args = args.split(" ", 3)
         count = len(args) - 3
@@ -95,15 +95,18 @@ class Weather(IrcModuleInterface):
         wind_vel = "{speed} km/h".format(speed=data['wind']['speed'])
         wind_deg = "{wind} deg.".format(wind=data['wind']['deg'])
         country = data['sys']['country']
-        msg = "{city_name} - {country}, Weather:{weather} - {weather_descr}  Temp: {temp}, Min: {min} Max: {max}, Humidity: {humidity}, Wind Speed: {speed}, Wind Degrees: {deg}".format(city_name=name,
-                                                                                                                                                                                         weather=weather,
-                                                                                                                                                                                         weather_descr=weather_descr,
-                                                                                                                                                                                         country=country,
-                                                                                                                                                                                         temp=temp,
-                                                                                                                                                                                         min=temp_min,
-                                                                                                                                                                                         max=temp_max,
-                                                                                                                                                                                         humidity=humidity,
-                                                                                                                                                                                         speed=wind_vel,
-                                                                                                                                                                                         deg=wind_deg
-                                                                                                                                                                                         )
+        msg = f"{name} - {country}, Weather:{weather} - {weather_descr}  Temp: {temp}," \
+              f" Min: {temp_min} Max: {temp_max}, " \
+              f"Humidity: {humidity}, Wind Speed: {wind_vel}, Wind Degrees: {wind_deg}"
         irc.msg_to_channel(irc.params.CHANNEL, msg)
+    
+    def on_message(self, *args, **kwargs):
+        irc = None
+        if "client" in kwargs:
+            irc = kwargs["client"]
+        
+        if  kwargs['message'].startswith('? weather') and "get" not in kwargs['message']:
+            city =  kwargs['message'].split(" ", 2)[2]
+            self.consume_weather_api(irc, kwargs['message'], irc.params.OPENWEATHER_API)
+            return
+        return
