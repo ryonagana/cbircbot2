@@ -6,16 +6,19 @@ import selectors
 import socket
 import sys
 import traceback
-
+from multiprocessing import Queue, Process, Pool
 import cbircbot2.core.config
 from cbircbot2.core.client import IrcClient
 from cbircbot2.core.input import InputText
-from cbircbot2.core.modules import IrcModules
+from cbircbot2.core.modules import IrcModules, MODULE_LIST
 from cbircbot2.core.params import EnvironmentParams
 from cbircbot2.core.sockets import Socket
 
 target_path = pathlib.Path(os.path.abspath(__file__)).parents[3]
 sys.path.append(target_path)
+
+
+
 
 class Bot(object):
     ssl_enable: bool = False
@@ -26,7 +29,9 @@ class Bot(object):
     params = None
     sock: Socket = None
     modules: IrcModules = None
-    selectors = None
+    selectors = None,
+    
+    data_queue : Queue = Queue()
 
     def __init__(self):
         self.cfg = cbircbot2.core.config.Config()
@@ -83,8 +88,13 @@ class Bot(object):
                         callback = key.data
                         data = callback(key.fileobj)
                     if data:
+                        self.data_queue.put(data)
+                        proc = Process(target=self.irc.process_modules_worker, args=(self.modules, self.data_queue,))
+                        proc.start()
                         self.irc.bot_loop(data)
-                        self.irc.parse(data)
+                        
+                        
+                       
         except KeyboardInterrupt as e:
             print(f"Exception Raised: {e}")
             self.irc.modules_process.join()

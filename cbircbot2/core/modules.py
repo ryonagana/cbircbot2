@@ -7,6 +7,10 @@ from cbircbot2.modules.Users import Users
 import traceback
 from contextlib import suppress
 
+if "MODULE_LIST" not in globals():
+    globals()["MODULE_LIST"] = {}
+
+
 class IrcModules(object):
     namespace = "cbircbot2.modules."
     module_folder_list = []
@@ -31,16 +35,25 @@ class IrcModules(object):
             if inst:
                 self.module_instances_list[mod.lower()] = inst()
                 self.module_instances_list[mod.lower()].start(self.irc_client)
+            
+        global  MODULE_LIST
+        MODULE_LIST = self.module_instances_list.copy()
+
+       
 
     def get_module_instance(self, name):
-        """ get the module instance
-            need to suppress  exception
-            avoid thread break
-            just ignore it
         """
-        with suppress(IndexError):
-            if name.lower() in self.module_instances_list:
-                return self.module_instances_list[name.lower()]
+        get the module instance  need to suppress  exception  avoid thread break just ignore it
+        :param name: module name in lowercase
+        :return: module instance or None if fails
+        """
+        if not name.lower():
+            name = name.lower
+ 
+        if name.lower() in self.module_instances_list:
+            return self.module_instances_list[name.lower()]
+        
+        return None
 
     def create_instance(self, module_name):
 

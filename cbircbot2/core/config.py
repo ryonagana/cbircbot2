@@ -1,7 +1,7 @@
 import configparser
 import traceback
 from dataclasses import  dataclass
-
+from typing import Dict, Any
 
 @dataclass
 class Config:
@@ -48,7 +48,7 @@ class Config:
         if not self.config.read("config.conf"):
             raise Exception("Config.conf not found!")
         
-        return self.config
+        return self.config.sections().copy()
         
     def set(self, group, key, value) -> bool:
         
@@ -81,3 +81,7 @@ class Config:
         for section in self.config.sections():
             for keys in self.config[section]:
                 print(f"Section:{section} -> {keys} : {self.config[section][keys]}")
+                
+    
+    def __str__(self):
+        return "Config Class"
