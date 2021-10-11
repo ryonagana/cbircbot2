@@ -7,23 +7,21 @@ from cbircbot2.modules.Users import Users
 import traceback
 from contextlib import suppress
 
-if "MODULE_LIST" not in globals():
-    globals()["MODULE_LIST"] = {}
 
 
 class IrcModules(object):
-    namespace = "cbircbot2.modules."
-    module_folder_list = []
-    module_instances_list = {}
+    namespace:str  = "cbircbot2.modules."
+    module_folder_list: list = []
+    module_instances_list: dict = {}
 
-    def __init__(self, modules, *args, **kwargs):
+    def __init__(self,*args, **kwargs):
         """init module list, prepare the file to load instances"""
         self.irc_client = None
         if "client" in kwargs:
             self.irc_client = kwargs['client']
         with open("modules.txt", "r") as fp:
             lines = fp.read()
-            self.module_folder_list = [l for l in lines.split("\n")]
+            self.module_folder_list = [line for line in lines.split("\n")]
             fp.close()
 
         for mod in self.module_folder_list:
@@ -35,9 +33,6 @@ class IrcModules(object):
             if inst:
                 self.module_instances_list[mod.lower()] = inst()
                 self.module_instances_list[mod.lower()].start(self.irc_client)
-            
-        global  MODULE_LIST
-        MODULE_LIST = self.module_instances_list.copy()
 
        
 
@@ -59,15 +54,13 @@ class IrcModules(object):
 
         if module_name.find('__pycache__') != -1:
             return None
-
-        instance = None
-        module = None
         try:
-            instance = importlib.import_module(self.namespace + module_name)
+            instance = None
+            module = None
+            instance = importlib.import_module(f"{self.namespace}{module_name}", f"{module_name}")
             if not instance:
                 return None
-
-
+            
             return getattr(instance, module_name)
             #getattr(instance, module_name)
             # instance = __import__(self.namespace + module_name, fromlist=module_name)

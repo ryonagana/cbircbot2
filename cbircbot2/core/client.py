@@ -1,6 +1,7 @@
+import multiprocessing
+import os
+import sys
 from multiprocessing import Queue, Process, Pool
-
-import cbircbot2.core.client
 from cbircbot2.core.auth import AuthClient
 from cbircbot2.core.modules import IrcModules
 import time
@@ -16,6 +17,7 @@ class IrcClient(object):
     
     MAX_PROCESS: int = 4
     MAX_TASKS: int = 10
+    MAX_JOIN_TRIES: int = 10
     
     def __init__(self, sock=None, params=None, *args, **kwargs):
         self.sock = sock
@@ -24,8 +26,8 @@ class IrcClient(object):
         self.is_connected = False
         self.end_motd_detect = False
         self.is_joined = False
-        self.modules: IrcModules
         self.auth_user = AuthClient(self)
+        self.modules: IrcModules = IrcModules(client=self)
  
 
     def set_modules(self, module_class: IrcModules):
@@ -65,20 +67,12 @@ class IrcClient(object):
     @staticmethod
     def convert_utf8(msg):
         """
-        
         :param msg: binary string from server
         :return: a decoded utf-8 string
         """
-        return msg.decode('utf-8')
+        #message = msg.decode(encoding="UTF-8", errors="strict")
+        return msg
     
-    def add_queue(self, data:Any = None) -> None:
-        """
-        adds the message to the queue for posterior processing
-        
-        :param data: get the data from connected SERVER string only, other types will be ignored
-        :return: None
-        """
-        self.modules_queue.put(data)
 
     def msg_to(self, receiver, message):
         self.send("PRIVMSG {0} :{1}".format(receiver, message))
@@ -95,21 +89,22 @@ class IrcClient(object):
     def auth(self, **kwargs):
         if "modules" in kwargs:
             self.modules = kwargs["modules"]
-
+            
         self.send("NICK {0}".format(self.params.NICKNAME))
         self.send("USER {0} {1} * :{2}".format(self.params.NICKNAME, self.params.HOSTNAME, self.params.IDENTD))
 
     def heartbeat(self, msg):
-        data = IrcClient.convert_utf8(msg)
+        data = IrcClient.sanitize_string(msg)
         if data and data.find("PING") != -1 or data.startswith("PING") != -1:
             pong = data.split(':')[1]
             msg = f'PONG :{pong}'
             self.send(msg)
             print(msg)
 
-    def detect_motd(self, msg :str):
+    def detect_motd(self, msg):
         """detect if motd is found, end of the motd to start auto join and modules thread"""
-        data = IrcClient.convert_utf8(msg)
+        data = IrcClient.sanitize_string(msg)
+
 
         if data.find(':End of /MOTD') != -1 or data.find('/MOTD') != -1 and not self.end_motd_detect:
             self.end_motd_detect = True
@@ -118,7 +113,7 @@ class IrcClient(object):
         return False
 
     def output_data(self, msg):
-        print(IrcClient.convert_utf8(msg))
+        print(f"SERVER: {msg}", file=sys.stdout)
         
     def bot_loop(self, data:str = ""):
 
@@ -126,8 +121,7 @@ class IrcClient(object):
         # do ping pong check
   
         self.heartbeat(data)
-        
-
+    
         if self.detect_motd(data):
             # change flag to connected
             self.is_connected = True
@@ -137,78 +131,82 @@ class IrcClient(object):
 
             # try to join a channel
             tries: int = 1
-            while not self.is_joined and  tries <= 5:
+            while not self.is_joined and tries <= self.MAX_JOIN_TRIES:
+                if tries == self.MAX_JOIN_TRIES:
+                    print("Bot Exceeded Max Tries")
+                    sys.exit(-1)
                 self.join_channel(self.params.CHANNEL)
                 print(f"tried {tries} times to join {self.params.CHANNEL}")
                 time.sleep(2)
                 tries += 1
         
-        
+            
         
         self.output_data(data)
 
     
+    @classmethod
+    def process_private_message(cls, irc, msg):
 
-    def process_private_message(self, modules, msg: str):
-        print("PROCESSA MSG")
-        
-        msg = IrcClient.sanitize_string(IrcClient.convert_utf8(msg))
+        msg = IrcClient.sanitize_string(msg)
         
         if msg.find('PRIVMSG') != -1:
     
             is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
             if not is_message:
                 return
-        
-    
+            
+            print(type(irc))
             data = {
-                'client': self,
+                'client': irc,
                 'sender': is_message.groups()[0],  # sender's nickname
                 'ident': is_message.groups()[1],  # ident
                 'receiver': is_message.groups()[2],  # channel or receiver's nickname
                 'message': is_message.groups()[3],  # message
             }
-
-            modules.broadcast_message_all_modules(**data)
+            
+            irc.modules.broadcast_message_all_modules(**data)
             if not data['message'].strip("").startswith("?"):
                 return
-            
-            self.msg_to_channel(self.params.CHANNEL, f"Oi {data['sender']}. Meus Modulos estão desativados, prometo que logo vou consertar, desculpe o transtorno")
-            time.sleep(10)
-        
-                
 
-            
-            """
+
             msg = data['message'].strip("").split(" ")
-            module = msg[1]
-            command = msg[2]
+            module = msg[1].lower()
+            command = msg[2].lower()
             module_instance = None
             
             try:
-                if not modules:
+                if not irc.modules:
                     return
                 
-                module_instance = modules.get_module_instance(module)
+                if module in irc.modules.module_instances_list:
+                    module_instance = irc.modules.get_module_instance(module)
                 
                 if not module_instance:
                     print(f"{module} cannot be loaded")
                     return
+
+                if command in module_instance.registered_commands:
+                    module_instance.registered_commands[command].run(module_instance, full_command=msg, client=self, data=data)
             except Exception as ex:
                 print(f"Error: {ex}")
-
-            if command in module_instance.registered_commands:
-                module_instance.registered_commands[command].run(module_instance, full_command=msg, client=self, data=data)
-            """
-
+                return
     # MULTIPROCESSING CALLBACK ALERT
-
-    def process_modules_worker(self, modules, queue: Queue) -> None:
-        print("PROCESSA MODULES")
-        message = queue.get()
-        if message:
-            self.process_private_message(modules, message)
-            time.sleep(0.3)
+    
+    @classmethod
+    def process_modules_worker(cls, irc, queue: multiprocessing.JoinableQueue) -> None:
+        
+        while True:
+            if queue.empty():
+                continue
+            print(f"{os.getpid()}")
+            message = queue.get_nowait()
+            
+            if not message:
+                continue
+                
+            irc.process_private_message(irc, message)
+            queue.task_done()
 """
         while True:
             msg = queue_in.get()
