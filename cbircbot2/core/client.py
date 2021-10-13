@@ -1,15 +1,11 @@
 import multiprocessing
 import os
 import sys
-from multiprocessing import Queue, Process, Pool
 from cbircbot2.core.auth import AuthClient
 from cbircbot2.core.modules import IrcModules
 import time
 import logging
-from typing import Any
-import threading
 import re
-from contextlib import suppress
 logging.basicConfig(filename="log.txt")
 
 
@@ -144,7 +140,6 @@ class IrcClient(object):
         
         self.output_data(data)
 
-    
     @classmethod
     def process_private_message(cls, irc, msg):
 
@@ -152,7 +147,7 @@ class IrcClient(object):
         
         if msg.find('PRIVMSG') != -1:
     
-            is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
+            is_message = re.search(r"^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
             if not is_message:
                 return
             
@@ -169,10 +164,25 @@ class IrcClient(object):
             if not data['message'].strip("").startswith("?"):
                 return
 
+            command_regex = re.compile(r"^([?|!])[\s](.+[aA-zZ0-9])[\s](.+[aA-zZ0-9])$", re.IGNORECASE | re.UNICODE)
+            is_valid_command = command_regex.search(data['message'])
+            
+            if not is_valid_command:
+                return
 
-            msg = data['message'].strip("").split(" ")
-            module = msg[1].lower()
-            command = msg[2].lower()
+            msg = {
+                'prefix': is_valid_command.groups()[0],
+                'module': is_valid_command.groups()[1],
+                'command': is_valid_command.groups()[2]
+            }
+   
+            try:
+                module = msg['module'].lower()
+                command = msg['command'].lower()
+            except IndexError as index_error:
+                print(f"invalid or malformed command {index_error}")
+                return
+    
             module_instance = None
             
             try:
@@ -187,77 +197,27 @@ class IrcClient(object):
                     return
 
                 if command in module_instance.registered_commands:
-                    module_instance.registered_commands[command].run(module_instance, full_command=msg, client=self, data=data)
+                    module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
             except Exception as ex:
                 print(f"Error: {ex}")
                 return
     # MULTIPROCESSING CALLBACK ALERT
     
     @classmethod
-    def process_modules_worker(cls, irc, queue: multiprocessing.JoinableQueue) -> None:
+    def process_modules_worker(cls, queue: multiprocessing.JoinableQueue) -> None:
         
         while True:
             if queue.empty():
                 continue
+
             print(f"{os.getpid()}")
-            message = queue.get_nowait()
+            q = queue.get_nowait()
+            
+            irc: IrcClient = q[0]
+            message:str = q[1]
             
             if not message:
                 continue
                 
             irc.process_private_message(irc, message)
             queue.task_done()
-"""
-        while True:
-            msg = queue_in.get()
-            
-            if not msg:
-                continue
-
-            if msg.find('PRIVMSG') != -1:
-                is_message = re.search("^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$", msg)
-                
-                if is_message:
-
-                    data = {
-                        'client': irc,
-                        'sender': is_message.groups()[0],  # sender's nickname
-                        'ident': is_message.groups()[1],  # ident
-                        'receiver': is_message.groups()[2],  # channel or receiver's nickname
-                        'message': is_message.groups()[3],  # message
-                    }
-
-                    irc.modules.broadcast_message_all_modules(**data)
-
-                    if not data['message'].strip("").startswith("?"):
-                        continue
-
-                    msg = data['message'].strip("").split(" ")
-                    
-                    with suppress(IndexError):
-                        prefix = msg[0]
-                        module = msg[1]
-                        command = msg[2]
-                        params = data['message'].split(" ")[3:]
- 
-                    with suppress(Exception):
-                        module_instance = irc.modules.get_module_instance(module)
-                        if not module_instance:
-                            continue
-
-                        if command in module_instance.registered_commands:
-                            module_instance.registered_commands[command].run(module_instance, full_command=msg, client=irc, data=data)
-                            
-            queue_in.task_done()
-            time.sleep(0.1)
-
-
-    ## END MULTIPROCESSING CALLBACK ALERT
-
-    ##remember to decode to utf8 and strip \r\n from the messages
-
-
-    def list_users(self):
-        self.send("NAMES {0}".format(self.params.CHANNEL))
-
-"""

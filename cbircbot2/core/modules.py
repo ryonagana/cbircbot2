@@ -10,12 +10,14 @@ from contextlib import suppress
 
 
 class IrcModules(object):
-    namespace:str  = "cbircbot2.modules."
-    module_folder_list: list = []
-    module_instances_list: dict = {}
+
 
     def __init__(self,*args, **kwargs):
         """init module list, prepare the file to load instances"""
+        self.namespace:str  = "cbircbot2.modules."
+        self.module_folder_list: list = []
+        self.module_instances_list: dict = {}
+        
         self.irc_client = None
         if "client" in kwargs:
             self.irc_client = kwargs['client']
