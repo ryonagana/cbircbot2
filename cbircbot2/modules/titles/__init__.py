@@ -42,29 +42,35 @@ class titles(IrcModuleInterface):
         if not link:
             return
         
-        with suppress(requests.exceptions.ConnectTimeout):
-            req = requests.get(link, allow_redirects=False, timeout=1, stream=True)
-
-        if req.status_code != 200:
-            self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{req.url} Invalid Response: {req.status_code}")
-            return
-
-        if int(req.headers['content-length']) > 1000000:
-            self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{link} took too long. aborting")
-            return
-        
-        content_type = req.headers['content-type']
-        
-        if "text/html" not in content_type:
-            if "image/jpeg" in content_type:
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{link} is a JPEG image")
-                return
-            else:
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{link} is not a valid html page")
-                return
-        
-        html_element = req.text
+        try:
+            #blocking redirects avoid ifinite loops when a website is incorrectly redirected
+            req = requests.get(link, allow_redirects=False, stream=True)
     
-        title = html_element[ html_element.find('<title>') + 7 : html_element.find('</title>')]
-        self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{html.unescape(title)}")
+            if req.status_code != 200:
+                self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{req.url} Invalid Response: {req.status_code}")
+                return
+                
+            try:
+                content_type = req.headers['content-type']
+                print(f"content-type: {content_type}")
+                
+                if content_type.find("text/html") != -1:
+                    html_element = req.text
+                    title = html_element[ html_element.find('<title>') + 7 : html_element.find('</title>')]
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{html.unescape(title)}")
+                    return
+                
+                elif content_type.find("image/") != -1:
+                    if int(req.headers['content-length']) > 100000:
+                        self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{link} took too long. aborting")
+                        return
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{link} is a {content_type} image")
+                    return
+            except IndexError:
+                print(f"{req.url} has incorrect context-type")
+
+        except requests.exceptions.Timeout:
+            self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{req.url} timed out")
+        except requests.HTTPError as http:
+            self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{req.url} occurred a HTTP Exception Error: {http}")
         return
