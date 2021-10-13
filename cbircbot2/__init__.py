@@ -72,7 +72,14 @@ class CbIrcBot:
                         
                         self.data_queue.put((self.irc, data))
                         self.irc.bot_loop(data)
-
+                        
+                        if not self.process.is_alive():
+                            print("Message loop Process Restarted after Exception")
+                            self.process.terminate()
+                            self.process.close()
+                            
+                            self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
+                            self.process.start()
 
 def main():
     bot = CbIrcBot()

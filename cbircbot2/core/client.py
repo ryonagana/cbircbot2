@@ -151,7 +151,6 @@ class IrcClient(object):
             if not is_message:
                 return
             
-            print(type(irc))
             data = {
                 'client': irc,
                 'sender': is_message.groups()[0],  # sender's nickname
@@ -160,21 +159,25 @@ class IrcClient(object):
                 'message': is_message.groups()[3],  # message
             }
             
+            #broadcast all messages before tests
             irc.modules.broadcast_message_all_modules(**data)
-            if not data['message'].strip("").startswith("?"):
+            if not data['message'].startswith("?"):
                 return
 
-            command_regex = re.compile(r"^([?|!])[\s](.+[aA-zZ0-9])[\s](.+[aA-zZ0-9])$", re.IGNORECASE | re.UNICODE)
+            command_regex = re.compile(r"^([?|!]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
             is_valid_command = command_regex.search(data['message'])
+            print(is_valid_command.groups())
             
             if not is_valid_command:
                 return
 
             msg = {
-                'prefix': is_valid_command.groups()[0],
-                'module': is_valid_command.groups()[1],
-                'command': is_valid_command.groups()[2]
+                'prefix': is_valid_command.groups()[0].strip(),
+                'module': is_valid_command.groups()[1].strip(),
+                'command': is_valid_command.groups()[2].strip()
             }
+            
+            print(f"Command Issued: {msg}")
    
             try:
                 module = msg['module'].lower()
