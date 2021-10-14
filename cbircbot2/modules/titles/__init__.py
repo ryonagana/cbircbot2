@@ -25,7 +25,7 @@ class titles(IrcModuleInterface):
         return detect
         
     def _extract_link(self, msg):
-        match = re.match(r"(?:(https|http)):\/\/(?:\w{3})(\S+)?", msg, re.IGNORECASE)
+        match = re.match(r"^(https:|http:)\/\/(?:(w{3})\.)?(.+[aA-zZ0-9])$", msg, re.IGNORECASE)
         
         if not match:
             return None
