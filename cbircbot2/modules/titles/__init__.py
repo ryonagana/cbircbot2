@@ -34,7 +34,7 @@ class titles(IrcModuleInterface):
     
     def _is_youtube_link(self, msg):
         
-        match = re.compile(r"(https:|http:)\/\/(?:w{3}\.)?(youtube\.com|youtu.be)\/(?:watch\?v\=)?(.+[aA-zZ0-9])", re.IGNORECASE)
+        match = re.compile(r"(https:|http:)\/\/(?:w{3}\.)?(youtube\.com|youtu.be)\/(?:watch\?v\=)(\S+[\w]\S)", re.IGNORECASE)
         search = match.search(msg)
         if not search.groups():
             return None
@@ -80,14 +80,19 @@ class titles(IrcModuleInterface):
         except requests.HTTPError as http:
             self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{req.url} occurred a HTTP Exception Error: {http}")
         return
-
+    
+    
+    def get_yotube_link_from_match(self,  match):
+        return f"{match[0]}//{match[1]}/watch?v={match[2]}"
     
     def get_youtube_data(self, data, link, *args, **kwargs):
         req = None
         line_prefix = None
         try:
-            link_prefix = data[2]
-            link_oembed = f"https://www.youtube.com/oembed?url={link}&format=json"
+            link_data = self.get_yotube_link_from_match(data)
+            link = link_data
+            print(link_data)
+            link_oembed = f"https://www.youtube.com/oembed?url={link_data}&format=json"
             req = requests.get(link_oembed, allow_redirects=False, stream=True)
             
             content_type = req.headers['content-type']
