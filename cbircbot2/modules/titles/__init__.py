@@ -15,6 +15,9 @@ class titles(IrcModuleInterface):
     def __init__(self):
         super().__init__()
         
+        self.match_youtube_link = re.compile(r"(https:|http:)\/\/(?:w{3}\.)?(youtube\.com|youtu.be)\/(?:watch\?v\=)(\S+[\w]\S)", re.IGNORECASE)
+        self.match_link = re.compile(r"(https:|http:)\/\/(?:(w{3})\.)?(\S+[\w]\S)", re.IGNORECASE)
+        
     def start(self, client):
         super().start(client)
     
@@ -25,19 +28,26 @@ class titles(IrcModuleInterface):
         return detect
         
     def _extract_link(self, msg):
-        match = re.match(r"^(https:|http:)\/\/(?:(w{3})\.)?(.+[aA-zZ0-9])$", msg, re.IGNORECASE)
-        
-        if not match:
+        search = self.match_link.search(msg)
+        if not search:
             return None
         
-        return match.group()
+        if(search.groups()[1]):
+            link = f"{search.groups()[0]}//{search.groups()[1]}.{search.groups()[2]}"
+        else:
+            link = f"{search.groups()[0]}//{search.groups()[2]}"
+        print(f"LINK SITE:{link}")
+        
+        return link
     
     def _is_youtube_link(self, msg):
         
-        match = re.compile(r"(https:|http:)\/\/(?:w{3}\.)?(youtube\.com|youtu.be)\/(?:watch\?v\=)(\S+[\w]\S)", re.IGNORECASE)
-        search = match.search(msg)
-        if not search.groups():
+        #match = re.compile(r"(https:|http:)\/\/(?:w{3}\.)?(youtube\.com|youtu.be)\/(?:watch\?v\=)(\S+[\w]\S)", re.IGNORECASE)
+        search = self.match_youtube_link.search(msg)
+        if not search:
             return None
+        
+
         
         return search.groups()
         
@@ -46,6 +56,8 @@ class titles(IrcModuleInterface):
         req = None
     
         if not link:
+            print("invalid Link")
+            self.irc.msg_to_channel(self.irc.params.CHANNEL, f"invalid link")
             return
     
         try:
