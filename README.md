@@ -1,4 +1,4 @@
-# CB Bot for IRC Protocol 2.0
+# CB Bot for IRC 2.0
 #### a modular bot using python 3.8+
 an IRC Bot runs using multiprocessing power
 
