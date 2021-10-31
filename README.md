@@ -1,17 +1,16 @@
-# CB IRCBot 2.0
-a modular bot using python 3.7+
-and the sucessor of [cbircbot](https://github.com/ryonagana/cbircbot)
+# CB Bot for IRC Protocol 2.0
+#### a modular bot using python 3.8+
+an IRC Bot runs using multiprocessing power
 
 ### Dependencies:
-- virtualenv (optional)
-- ZODB (only if you need User module)
-- ZEO Server (fix concurrency problems)
-- IPython (ease debugging)
-- urllib3 for Weather
-- BeautifulSoup 4
-- Python Version 3.7+
+- virtualenv (optional, avoid mix packages)
+- ZODB (only if you need User module with DB)
+- ZEO Server (fix concurrency problems for ZODB)
+- IPython (ease debugging, optional)
+- urllib3 for Weather (required if weather module is active)
+- BeautifulSoup 4 (required if title module is active)
 
-can run on python 3.6 but not recommended because some features are missing
+#### Please use Python 3.8+
 
 ### Setup virtualenv
 ```console
@@ -30,9 +29,9 @@ foo@bar:~$ source venv/bin/activate
 ### After Setup:
     you need to create a fresh Database file
     go to cli/ folder and execute db_utils.py
-
 ```console
-foo@bar:~$ python3 db_utils.py
+foo@bar:~$ cd <root dir>/cli/
+foo@bar:~$ python3 db_utils
 ```
 - Choose option 1 - Create a Fresh Database
 - then you need ZEO server running
