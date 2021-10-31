@@ -8,6 +8,7 @@ and the sucessor of [cbircbot](https://github.com/ryonagana/cbircbot)
 - ZEO Server (fix concurrency problems)
 - IPython (ease debugging)
 - urllib3 for Weather
+- BeautifulSoup 4
 - Python Version 3.7+
 
 can run on python 3.6 but not recommended because some features are missing
@@ -23,7 +24,7 @@ foo@bar:~$ source venv/bin/activate
 ```
 ## If dependencies go wrong
 ```console
-(venv)foo@bar:~$ pip install zeo zodb urllib3 ipython tornado requests  
+(venv)foo@bar:~$ pip install zeo zodb urllib3 ipython tornado requests bs4
 ```
 
 ### After Setup:

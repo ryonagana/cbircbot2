@@ -2,7 +2,7 @@ from cbircbot2.core.module_base import IrcModuleInterface
 import requests
 import re
 import html
-from contextlib import suppress
+from bs4 import BeautifulSoup
 import json
 
 class titles(IrcModuleInterface):
@@ -75,7 +75,17 @@ class titles(IrcModuleInterface):
                 if content_type.find("text/html") != -1:
                     html_element = req.text
                     title = html_element[ html_element.find('<title>') + 7 : html_element.find('</title>')]
-                    self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{html.unescape(title)}")
+                    og_description = ""
+
+                    soup = BeautifulSoup(html_element, features='html.parser')
+                    meta = soup.find_all("meta")
+                    if meta:
+                        for m in meta:
+                            if m.get('name') == 'description':
+                                og_description = m.get('content')
+
+
+                    self.irc.msg_to_channel(self.irc.params.CHANNEL, f"{html.unescape(title)} - {html.unescape(og_description)} ")
                     return
             
                 elif content_type.find("image/") != -1:
