@@ -97,7 +97,7 @@ class titles(IrcModuleInterface):
     def get_yotube_link_from_match(self,  match):
         return f"{match[0]}//{match[1]}/watch?v={match[2]}"
     
-    def get_youtube_data(self, data, link, *args, **kwargs):
+    def get_youtube_data(self, data):
         req = None
         line_prefix = None
         try:
@@ -117,9 +117,17 @@ class titles(IrcModuleInterface):
                 return
 
             json_text = json.loads(req.text)
-            
+            title: str = ""
+            author: str = ""
+
             if "title" in json_text:
-                self.irc.msg_to_channel(self.irc.params.CHANNEL, f"Youtube: {json_text['title']}")
+                title = json_text['title']
+
+            if "author_name" in json_text:
+                author = json_text['author_name']
+
+            msg_to_channel: str = f"Youtube: {title} - Author: {author}"
+            self.irc.msg_to_channel(self.irc.params.CHANNEL, msg_to_channel)
 
 
         except requests.exceptions.Timeout:
@@ -130,16 +138,16 @@ class titles(IrcModuleInterface):
     
     
     def on_message(self, *args, **kwargs):
-        message = kwargs["message"]
+        message_data = kwargs["message"]
         
-        if not self._detect_protocol(message):
+        if not self._detect_protocol(message_data):
             return
         
-        link = self._is_youtube_link(message)
+        link_match = self._is_youtube_link(message_data)
         
-        if link:
-            self.get_youtube_data(link, message)
+        if link_match:
+            self.get_youtube_data(link_match)
             return
         
-        self.get_site_title(message)
+        self.get_site_title(message_data)
         return
