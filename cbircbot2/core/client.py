@@ -24,6 +24,8 @@ class IrcClient(object):
         self.is_joined = False
         self.auth_user = AuthClient(self)
         self.modules: IrcModules = IrcModules(client=self)
+
+        self.modules.irc_client = self
  
 
     def set_modules(self, module_class: IrcModules):

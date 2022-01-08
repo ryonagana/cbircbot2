@@ -66,7 +66,7 @@ class IrcModuleInterface(object):
     def start(self, client):
         self.irc = client
         self.cmd_help_generator()
-        assert self.irc is not None
+        #assert self.irc is not None
         print("{mod_name} Started".format(mod_name=self.MODULE_NAME))
         pass
 

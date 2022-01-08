@@ -8,10 +8,10 @@ class EnvironmentParams:
     NICKNAME: str = "creekman"
     USERNAME: str = "creeka"
     IDENTD: str = "lame guy"
-    CHANNEL: str = "#lamechannel"
+    CHANNEL: str = "#defaultchannel"
     CHANNEL_PASSWD: str = ""
     MODULES : str = "*"
-    HOSTNAME : str = "irc.freenode.net"
+    HOSTNAME : str = "irc.libera.chat"
     PORT : int = 6667
     NICKSERV_IDENTIFY : bool = False
     SSL_ENABLED : bool = False

@@ -31,7 +31,7 @@ class IrcModules(object):
                 continue
 
             inst = self.create_instance(mod)
-            #print ("Loaded Module: {module}".format(module=mod))
+            print ("Loaded Module: {module}".format(module=mod))
             if inst:
                 self.module_instances_list[mod.lower()] = inst()
                 self.module_instances_list[mod.lower()].start(self.irc_client)
