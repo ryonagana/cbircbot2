@@ -14,6 +14,11 @@ if [ "$lazy" =  "1" ];
   exit
 fi
 
+#keep commented if you want to use default
+#if you want to use the new client uncomment the line below (experimental, unstable)
+#export CB_NEW_LOOP=1
+
+
 
 while true
 do
