@@ -16,3 +16,4 @@ config.conf
 config.conf
 .idea
 env/
+.venv
