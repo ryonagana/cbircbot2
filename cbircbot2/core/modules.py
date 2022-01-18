@@ -13,7 +13,9 @@ class IrcModules(object):
 
 
     def __init__(self,*args, **kwargs):
-        """init module list, prepare the file to load instances"""
+        """init module list, prepare the file to load instances
+           client= IRC Client Instance
+        """
         self.namespace:str  = "cbircbot2.modules."
         self.module_folder_list: list = []
         self.module_instances_list: dict = {}
@@ -21,6 +23,9 @@ class IrcModules(object):
         self.irc_client = None
         if "client" in kwargs:
             self.irc_client = kwargs['client']
+        else:
+            raise Exception("irc client must be called")
+        
         with open("modules.txt", "r") as fp:
             lines = fp.read()
             self.module_folder_list = [line for line in lines.split("\n")]
