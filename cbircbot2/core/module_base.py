@@ -1,3 +1,4 @@
+from typing import Any
 from cbircbot2.core.command import Command
 import re
 from enum import Enum, auto
@@ -28,8 +29,9 @@ class IrcModuleInterface(object):
     message = ""
 
     def command_exists(self, command):
-        for k,_ in self.registered_commands.items():
-            if command.find(k) != -1:
+
+        if len(self.registered_commands) > 0:   
+            if command in self.registered_commands:
                 return True
         return False
     
