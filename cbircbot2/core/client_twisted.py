@@ -17,7 +17,7 @@ from cbircbot2.core.modules import IrcModules
 from typing import Any, Optional
 from cbircbot2.core.params import EnvironmentParams
 
-class IRCClientTwisted(irc.IRCClient):    
+class IRCClientTwisted(irc.IRCClient):
 
     command_regex = None
 
