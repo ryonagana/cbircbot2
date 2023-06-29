@@ -19,6 +19,7 @@ class IrcModules(object):
         self.namespace:str  = "cbircbot2.modules."
         self.module_folder_list: list = []
         self.module_instances_list: dict = {}
+        self.module_file = "modules.txt"
         
         self.irc_client = None
         if "client" in kwargs:
@@ -26,10 +27,7 @@ class IrcModules(object):
         else:
             raise Exception("irc client must be called")
         
-        with open("modules.txt", "r") as fp:
-            lines = fp.read()
-            self.module_folder_list = [line for line in lines.split("\n")]
-            fp.close()
+        self.parse_module_list()
 
         for mod in self.module_folder_list:
             if mod == "__pycache__" or mod == "":
@@ -42,7 +40,19 @@ class IrcModules(object):
                 self.module_instances_list[mod.lower()].start(self.irc_client)
 
        
-
+    def parse_module_list(self):
+        with open(self.module_file, "r") as fp:
+            lines = fp.read()
+            
+            for l in lines.split("\n"):
+                if l.startswith(";") or l.startswith("#"):
+                    continue
+                self.module_folder_list.append(l)
+        
+        return
+                
+                
+    
     def get_module_instance(self, name):
         """
         get the module instance  need to suppress  exception  avoid thread break just ignore it
@@ -51,7 +61,7 @@ class IrcModules(object):
         """
         if not name.lower():
             name = name.lower
- 
+    
         if name.lower() in self.module_instances_list:
             return self.module_instances_list[name.lower()]
         

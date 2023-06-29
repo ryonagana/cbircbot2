@@ -17,7 +17,7 @@ class EnvironmentParams:
     SSL_ENABLED : bool = False
     ZEO_ADDRESS : str = "localhost"
     ZEO_HOST : str = "localhost"
-    ZEO_PORT : str = 9100
+    ZEO_PORT : int = 9100
     ZEO_DB : str = "d"
     OPENWEATHER_API=""
     
