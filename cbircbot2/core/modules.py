@@ -11,7 +11,6 @@ from contextlib import suppress
 
 class IrcModules(object):
 
-
     def __init__(self,*args, **kwargs):
         """init module list, prepare the file to load instances
            client= IRC Client Instance

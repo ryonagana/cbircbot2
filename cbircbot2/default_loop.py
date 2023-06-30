@@ -5,6 +5,7 @@ import pathlib
 import selectors
 import socket
 import sys
+import time
 import traceback
 from multiprocessing import Process, JoinableQueue, Manager, Pool
 import cbircbot2.core.config
@@ -74,12 +75,15 @@ class CbIrcBot:
                         self.irc.bot_loop(data)
                         
                         if not self.process.is_alive():
-                            print("Message loop Process Restarted after Exception")
-                            self.process.terminate()
-                            self.process.close()
-                            
-                            self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
-                            self.process.start()
+                            try:
+                                print("Message loop Process Restarted after Exception")
+                                self.process.terminate()
+                                self.process.close()
+                                
+                                self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
+                                self.process.start()
+                            except Exception as e:
+                                    print(f"Exception: {e}")
 
 def main():
     bot = CbIrcBot()

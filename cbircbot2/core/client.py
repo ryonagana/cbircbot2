@@ -6,8 +6,20 @@ from cbircbot2.core.modules import IrcModules
 import time
 import logging
 import re
+from cbircbot2.core.fancy_module_handler import irc_plugin_manager
+from dataclasses import dataclass
+from typing import Any
+
 logging.basicConfig(filename="log.txt")
 
+
+@dataclass
+class IrcMessageData:
+    irc:object
+    sender:str
+    receiver:str
+    identd:str
+    message:str
 
 class IrcClient(object):
     
@@ -23,11 +35,26 @@ class IrcClient(object):
         self.end_motd_detect = False
         self.is_joined = False
         self.auth_user = AuthClient(self)
-        self.modules: IrcModules = IrcModules(client=self)
+        #self.modules: IrcModules = IrcModules(client=self)
+        self.modules2: irc_plugin_manager.IRCPluginManager = irc_plugin_manager.IRCPluginManager(self)
+        self.modules2.load()
 
-        self.modules.irc_client = self
- 
+        #self.modules.irc_client = self
+        
+        self.regex_list = {}
+        self.compile_regexes()
+    
+    def compile_regexes(self):
+        self.regex_list['privmsg'] = re.compile(r"^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$")
+        self.regex_list['valid_command'] = re.compile(f"^([?|!]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
 
+        
+    def get_regex(self, name):
+        if name not in self.regex_list:
+            return None
+        
+        return self.regex_list[name]
+    
     def set_modules(self, module_class: IrcModules):
         self.modules = module_class
         
@@ -138,9 +165,55 @@ class IrcClient(object):
                 time.sleep(2)
                 tries += 1
         
-            
-        
         self.output_data(data)
+
+    
+    @classmethod
+    def parse_messages(cls, client, message:str):
+        
+        msg = IrcClient.sanitize_string(message)
+        
+        if msg.find("PRIVMSG") == -1:
+            return
+       
+        privmsg_regex = client.get_regex("privmsg")
+        valid_msg = privmsg_regex.search(msg)
+        
+        if not valid_msg:
+            return
+        
+        data = IrcMessageData(
+            irc=client,
+            sender=valid_msg.groups()[0],
+            identd=valid_msg.groups()[1],
+            receiver=valid_msg.groups()[2],
+            message=valid_msg.groups()[3]
+        )
+        
+        #client.module2.broadcast_message(message=data)
+        
+        is_valid_command: Any = client.get_regex("valid_command")
+        
+        if not is_valid_command:
+            return
+        
+        if not is_valid_command.search(data.message):
+            sys.stderr.write(f"Command: {data.message} is not valid")
+            return
+        
+        cmd = {
+            'prefix': is_valid_command.group()[0],
+            'module': is_valid_command.group()[1],
+            'command': is_valid_command.group()[2],
+            'client': client
+        }
+        
+        if not cmd.get("prefix") or  not cmd.get("module")  or not cmd.get("command"):
+            sys.stderr.write(f"{data.message} -> Malformed Command")
+            return
+        
+        client.modules2.issue_command(**cmd)
+        return
 
     @classmethod
     def process_private_message(cls, irc, msg):
@@ -166,7 +239,7 @@ class IrcClient(object):
             if not data['message'].startswith("?"):
                 return
 
-            command_regex = re.compile(r"^([?|!]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
+            command_regex = re.compile(r"^([?|!|@]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
             is_valid_command = command_regex.search(data['message'])
             print(is_valid_command.groups())
             
@@ -214,15 +287,15 @@ class IrcClient(object):
         while True:
             if queue.empty():
                 continue
-
-            print(f"{os.getpid()}")
+                
             q = queue.get_nowait()
-            
             irc: IrcClient = q[0]
             message:str = q[1]
+            sys.stdout.write(f"QUEUE: {q}")
             
             if not message:
                 continue
                 
-            irc.process_private_message(irc, message)
+            #irc.process_private_message(irc, message)
+            irc.parse_messages(irc, message)
             queue.task_done()
