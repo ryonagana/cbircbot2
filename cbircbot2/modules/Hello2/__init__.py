@@ -1,4 +1,4 @@
-from cbircbot2.core.fancy_module_handler.irc_plugin import IRCPlugin
+from cbircbot2.core.module_handler.irc_plugin import IRCPlugin
 
 
 class Hello2(IRCPlugin):

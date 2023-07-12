@@ -3,7 +3,7 @@ import sys
 import os
 from cbircbot2.core.colors import *
 from dataclasses import dataclass
-from cbircbot2.core.fancy_module_handler.irc_plugin import IRCPlugin
+from cbircbot2.core.module_handler.irc_plugin import IRCPlugin
 
 
 @dataclass

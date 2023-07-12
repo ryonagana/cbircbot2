@@ -6,7 +6,7 @@ from cbircbot2.core.modules import IrcModules
 import time
 import logging
 import re
-from cbircbot2.core.fancy_module_handler import irc_plugin_manager
+from cbircbot2.core.module_handler import irc_plugin_manager
 from dataclasses import dataclass
 from typing import Any
 
