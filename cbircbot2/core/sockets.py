@@ -47,8 +47,8 @@ class Socket(object):
 
         return True
 
-    def recv(self, sock):
-        return sock.recv(4096)
+    def recv(self, size=4096):
+        return self.sock.recv(size)
 
 
     def send(self, data):

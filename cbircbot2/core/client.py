@@ -1,6 +1,8 @@
 import multiprocessing
 import os
 import sys
+
+import cbircbot2.core.module_handler.irc_plugin_manager
 from cbircbot2.core.auth import AuthClient
 from cbircbot2.core.modules import IrcModules
 import time
@@ -46,7 +48,8 @@ class IrcClient(object):
     
     def compile_regexes(self):
         self.regex_list['privmsg'] = re.compile(r"^:(.+[aA-zZ0-9])!(.*) PRIVMSG (.+?) :(.+[aA-zZ0-9\\+\\-])$")
-        self.regex_list['valid_command'] = re.compile(f"^([?|!]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
+       #self.regex_list['valid_command'] = re.compile(f"^([?|!]\s)(.+[aA-zZ0-9]\s)(.+[aA-zZ0-9])$", re.IGNORECASE)
+        self.regex_list['valid_command'] = re.compile(r"^([?|!]\s)(.+)$", re.IGNORECASE)
 
         
     def get_regex(self, name):
@@ -80,7 +83,15 @@ class IrcClient(object):
         return msg
 
     @staticmethod
-    def sanitize_string(msg):
+    def write_error(message, *args, **kwargs):
+        sys.stderr.write(f"ERROR: {message}\n")
+        return
+    @staticmethod
+    def write_out(message):
+        sys.stdout.write(f"OUT: {message}\n")
+        return
+    @staticmethod
+    def sanitize_string(msg:str):
         """
         :param msg: get the message data
         :return: stripped carriage return from server
@@ -119,7 +130,7 @@ class IrcClient(object):
         self.send("USER {0} {1} * :{2}".format(self.params.NICKNAME, self.params.HOSTNAME, self.params.IDENTD))
 
     def heartbeat(self, msg):
-        data = IrcClient.sanitize_string(msg)
+        data = msg #IrcClient.sanitize_string(msg)
         if data and data.find("PING") != -1 or data.startswith("PING") != -1:
             pong = data.split(':')[1]
             msg = f'PONG :{pong}'
@@ -169,7 +180,7 @@ class IrcClient(object):
 
     
     @classmethod
-    def parse_messages(cls, client, message:str):
+    def parse_messages(cls, client : Any, message: Any):
         
         msg = IrcClient.sanitize_string(message)
         
@@ -190,29 +201,34 @@ class IrcClient(object):
             message=valid_msg.groups()[3]
         )
         
-        #client.module2.broadcast_message(message=data)
-        
         is_valid_command: Any = client.get_regex("valid_command")
+        valid_cmd = is_valid_command.search(data.message)
         
-        if not is_valid_command:
+        if not valid_cmd:
+            IrcClient.write_out(f"{data.message} is Invalid Command!")
             return
         
-        if not is_valid_command.search(data.message):
-            sys.stderr.write(f"Command: {data.message} is not valid")
-            return
         
-        cmd = {
-            'prefix': is_valid_command.group()[0],
-            'module': is_valid_command.group()[1],
-            'command': is_valid_command.group()[2],
+        
+        prefix = valid_cmd.groups()[0]
+        cmd = valid_cmd.groups()[1].split(' ')
+    
+        cmd_dict = {
+            'prefix': prefix,
+            #'module': valid_cmd.group()[1],
+            'command': cmd[0],
+            'params' : cmd[1:],
             'client': client
         }
         
-        if not cmd.get("prefix") or  not cmd.get("module")  or not cmd.get("command"):
+        if not cmd_dict.get("prefix") or not cmd_dict.get("command"):
             sys.stderr.write(f"{data.message} -> Malformed Command")
             return
+        c : cbircbot2.core.module_handler.irc_plugin_manager.IRCPluginManager = client.irc.modules2
+        #client.modules2.issue_command(**cmd_dict)
+        c.issue_command(**cmd_dict)
         
-        client.modules2.issue_command(**cmd)
+        
         return
 
     @classmethod

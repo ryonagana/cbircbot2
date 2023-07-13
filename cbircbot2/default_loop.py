@@ -1,19 +1,16 @@
 import getopt
-import logging
-import os
-import pathlib
 import selectors
 import socket
 import sys
+import asyncio
 import time
-import traceback
+from contextlib import  suppress
 from multiprocessing import Process, JoinableQueue, Manager, Pool
 import cbircbot2.core.config
 from cbircbot2.core.client import IrcClient
-from cbircbot2.core.input import InputText
-from cbircbot2.core.modules import IrcModules
 from cbircbot2.core.params import EnvironmentParams
 from cbircbot2.core.sockets import Socket
+import errno
 
 
 class CbIrcBot:
@@ -30,7 +27,7 @@ class CbIrcBot:
         self.data_queue: JoinableQueue = JoinableQueue()
 
         self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
-        self.process.daemon = True
+        #self.process.daemon = True
 
         self.selector = selectors.DefaultSelector()
         
@@ -56,7 +53,69 @@ class CbIrcBot:
         if not self.sock.connect():
             raise socket.error(f"Socket cannot connect to {self.environment_params.HOSTNAME}:{self.environment_params.PORT}")
         self.selector.register(self.sock.socket_handler, selectors.EVENT_READ, self.sock.recv)
+    
+    def unload(self):
+        self.selector.close()
+        self.process.join()
+        self.process.close()
+        self.sock.close()
+    def get_data(self):
         
+        try:
+            data = self.sock.recv()
+            return data
+        except socket.error as e:
+            error = e.args[0]
+            
+            if error == errno.EAGAIN or error == errno.EWOULDBLOCK:
+                time.sleep(1)
+                return ""
+        return ""
+        
+    def loop(self):
+        self.process.start()
+        self.irc.auth()
+        
+        while not self._is_closed:
+            
+            try:
+                data = self.get_data()
+                data = data.decode("utf-8")
+                
+                if not data:
+                    continue
+                    
+                self.irc.bot_loop(data)
+                self.data_queue.put((self.irc, data))
+                time.sleep(0.1)
+            except AttributeError as ae:
+                time.sleep(1)
+                continue
+           
+            except KeyboardInterrupt as e:
+                IrcClient.write_out("Keyboard Interrupted.. Closing")
+                time.sleep(3)
+                self.sock.close()
+                break
+            
+            else:
+                if not self.process.is_alive():
+                    self.irc.write_error("Main Process is Dead. Starting  Now..")
+                    self.process.join()
+                    self.process.kill()
+                    self.process.close()
+                    
+                    del self.process
+                    
+                    self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
+                    self.process.start()
+                    #self.process.daemon = True
+                    
+                    if self.process.is_alive():
+                        self.irc.write_error("Process Ressurrected!")
+                        continue
+    
+    """
     def loop(self):
         self.process.start()
         self.irc.auth()
@@ -77,18 +136,21 @@ class CbIrcBot:
                         if not self.process.is_alive():
                             try:
                                 print("Message loop Process Restarted after Exception")
-                                self.process.terminate()
+                                self.process.kill()
                                 self.process.close()
+                                del self.process
                                 
                                 self.process = Process(target=self.irc.process_modules_worker, args=(self.data_queue,))
                                 self.process.start()
                             except Exception as e:
                                     print(f"Exception: {e}")
+"""
 
 def main():
     bot = CbIrcBot()
     bot.start()
     bot.loop()
+    bot.unload()
     pass
 
 

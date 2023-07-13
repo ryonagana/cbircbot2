@@ -76,10 +76,10 @@ class IRCPluginManager(object):
 		
 		
 		for mod in self.module_list.items():
-			for cmd in mod[1].instance.registered_cmd.items():
-				if cmd.name == kwargs.get("command"):
-					cmd_exec: IRCPlugin = yield cmd
-					cmd_exec.execute(**kwargs)
+			for module in mod[1].instance.registered_cmd.items():
+				if module.name == kwargs.get("command"):
+					mod_instance: IRCPlugin = yield module
+					mod_instance.execute(**kwargs)
 			
 			
 		
